@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MAVRIX — داشبورد مدیریت</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg-0:#08080c; --glass:rgba(255,255,255,.045); --glass-strong:rgba(255,255,255,.08);
+    --border:rgba(255,255,255,.10); --border-strong:rgba(255,255,255,.18);
+    --crimson:#c4123f; --crimson-bright:#ff2255; --silver:#b9bdc7; --steel:#7d8391;
+    --text:#f3f3f6; --text-dim:#9a9ca6; --radius:16px; --shadow:0 20px 60px -20px rgba(0,0,0,.7);
+    --green:#2ecc71; --amber:#f5a623;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{height:100%;}
+  body{
+    background:radial-gradient(1200px 600px at 15% -10%, rgba(196,18,63,.12), transparent 60%), var(--bg-0);
+    color:var(--text); font-family:'Vazirmatn',sans-serif; min-height:100%;
+  }
+  a{color:inherit;} button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+  input,select,textarea{font-family:inherit;}
+  .glass{background:var(--glass);backdrop-filter:blur(20px) saturate(140%);-webkit-backdrop-filter:blur(20px) saturate(140%);
+    border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);}
+
+  /* ===== login screen ===== */
+  #loginScreen{
+    min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;
+  }
+  .login-box{width:100%;max-width:360px;padding:36px 28px;display:flex;flex-direction:column;gap:16px;align-items:center;text-align:center;}
+  .login-box img{height:44px;margin-bottom:8px;}
+  .login-input{width:100%;padding:13px 16px;border-radius:12px;background:rgba(255,255,255,.04);
+    border:1px solid var(--border);color:var(--text);font-size:.95rem;outline:none;text-align:center;}
+  .login-input:focus{border-color:var(--crimson);}
+  .login-btn{width:100%;padding:13px;border-radius:12px;font-weight:800;
+    background:linear-gradient(135deg,var(--crimson),var(--crimson-bright));color:#fff;
+    box-shadow:0 10px 30px -10px rgba(196,18,63,.6);}
+  .login-btn:disabled{opacity:.5;}
+  .login-err{color:var(--crimson-bright);font-size:.85rem;min-height:1.2em;}
+
+  /* ===== dashboard shell ===== */
+  #dash{display:none;min-height:100vh;}
+  .dash-header{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 22px;position:sticky;top:0;z-index:20;
+    background:rgba(8,8,12,.75);backdrop-filter:blur(16px);
+    border-bottom:1px solid var(--border);
+  }
+  .dash-header .logo{height:26px;}
+  .dash-header .who{font-size:.8rem;color:var(--text-dim);}
+  .logout-btn{padding:8px 14px;border-radius:10px;background:var(--glass-strong);border:1px solid var(--border);font-size:.8rem;}
+
+  .tabs{display:flex;gap:6px;padding:14px 18px 0;overflow-x:auto;}
+  .tab-btn{padding:10px 16px;border-radius:12px;font-size:.85rem;font-weight:700;color:var(--text-dim);white-space:nowrap;}
+  .tab-btn.active{background:var(--glass-strong);color:var(--text);border:1px solid var(--border-strong);}
+
+  .panel{display:none;padding:18px;max-width:820px;margin:0 auto;flex-direction:column;gap:16px;}
+  .panel.active{display:flex;}
+
+  .card{padding:20px;display:flex;flex-direction:column;gap:14px;}
+  .card h3{font-size:1rem;font-weight:800;}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .row label{font-size:.88rem;color:var(--silver);}
+  .field{display:flex;flex-direction:column;gap:6px;flex:1;min-width:140px;}
+  .field input, .field select{padding:10px 12px;border-radius:10px;background:rgba(255,255,255,.04);
+    border:1px solid var(--border);color:var(--text);font-size:.88rem;outline:none;}
+  .field input:focus, .field select:focus{border-color:var(--crimson);}
+
+  .switch{position:relative;width:46px;height:26px;border-radius:20px;background:rgba(255,255,255,.1);
+    border:1px solid var(--border);flex-shrink:0;transition:background .2s;}
+  .switch.on{background:var(--crimson);}
+  .switch::after{content:'';position:absolute;top:2px;inset-inline-start:2px;width:20px;height:20px;border-radius:50%;
+    background:#fff;transition:inset-inline-start .2s;}
+  .switch.on::after{inset-inline-start:22px;}
+
+  .btn{padding:11px 18px;border-radius:12px;font-weight:700;font-size:.85rem;}
+  .btn-primary{background:linear-gradient(135deg,var(--crimson),var(--crimson-bright));color:#fff;
+    box-shadow:0 8px 24px -10px rgba(196,18,63,.6);}
+  .btn-ghost{background:var(--glass-strong);border:1px solid var(--border);}
+  .btn-danger{background:rgba(196,18,63,.15);border:1px solid rgba(196,18,63,.4);color:var(--crimson-bright);}
+  .btn:disabled{opacity:.45;cursor:not-allowed;}
+  .btn-sm{padding:7px 12px;font-size:.78rem;border-radius:9px;}
+
+  .save-msg{font-size:.78rem;color:var(--green);min-height:1.1em;}
+
+  .prize-row{display:flex;gap:8px;align-items:center;}
+  .prize-row input{flex:1;}
+
+  table{width:100%;border-collapse:collapse;font-size:.85rem;}
+  th{color:var(--text-dim);font-weight:700;text-align:start;padding:8px;border-bottom:1px solid var(--border);}
+  td{padding:8px;border-bottom:1px solid rgba(255,255,255,.05);vertical-align:middle;}
+  .badge-tag{color:var(--text-dim);font-weight:600;font-size:.85em;margin-inline-end:5px;}
+  .pill{padding:3px 9px;border-radius:20px;font-size:.72rem;font-weight:700;}
+  .pill.blocked{background:rgba(196,18,63,.18);color:var(--crimson-bright);}
+  .pill.active{background:rgba(46,204,113,.15);color:var(--green);}
+  .table-wrap{overflow-x:auto;}
+  .search-input{width:100%;padding:10px 14px;border-radius:10px;background:rgba(255,255,255,.04);
+    border:1px solid var(--border);color:var(--text);font-size:.85rem;outline:none;margin-bottom:8px;}
+
+  .winner-pick-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;}
+  .winner-pick-row select{flex:1;min-width:160px;}
+  .winner-list-item{display:flex;justify-content:space-between;align-items:center;padding:8px 12px;
+    border-radius:10px;background:rgba(255,255,255,.03);border:1px solid var(--border);}
+
+  .draw-status{padding:10px 14px;border-radius:10px;background:var(--glass-strong);border:1px solid var(--border);
+    font-size:.85rem;text-align:center;}
+  .draw-status.live{color:var(--crimson-bright);border-color:rgba(196,18,63,.4);}
+
+  .log-item{font-size:.8rem;color:var(--text-dim);padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05);}
+  .log-item b{color:var(--text);}
+
+  .hint{font-size:.75rem;color:var(--text-dim);line-height:1.7;}
+  .warn-box{padding:12px 14px;border-radius:10px;background:rgba(245,166,35,.1);border:1px solid rgba(245,166,35,.3);
+    font-size:.78rem;color:var(--amber);line-height:1.7;}
+</style>
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<div id="loginScreen">
+  <div class="login-box glass">
+    <img src="logo.png" alt="MAVRIX" draggable="false" oncontextmenu="return false">
+    <h2>ورود مدیریت</h2>
+    <input class="login-input" id="loginEmail" type="email" placeholder="ایمیل" autocomplete="username">
+    <input class="login-input" id="loginPass" type="password" placeholder="رمز عبور" autocomplete="current-password">
+    <button class="login-btn" id="loginBtn">ورود</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- ============ DASHBOARD ============ -->
+<div id="dash">
+  <div class="dash-header">
+    <img class="logo" src="logo.png" alt="MAVRIX" draggable="false" oncontextmenu="return false">
+    <div class="who" id="whoAmI"></div>
+    <button class="logout-btn" id="logoutBtn">خروج</button>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <button class="tab-btn active" data-tab="settings">تنظیمات</button>
+    <button class="tab-btn" data-tab="registrants">ثبت‌نامی‌ها</button>
+    <button class="tab-btn" data-tab="draw">قرعه‌کشی</button>
+    <button class="tab-btn" data-tab="admins">ادمین‌ها</button>
+    <button class="tab-btn" data-tab="logs">لاگ‌ها</button>
+    <button class="tab-btn" data-tab="backup">بکاپ</button>
+  </div>
+
+  <!-- ===== SETTINGS PANEL ===== -->
+  <div class="panel active" id="panel-settings">
+    <div class="card">
+      <h3>وضعیت ثبت‌نام</h3>
+      <div class="row">
+        <label>ثبت‌نام باز است</label>
+        <div class="switch" id="swRegOpen"></div>
+      </div>
+      <div class="field">
+        <label>ظرفیت</label>
+        <input type="number" id="fCapacity" min="1">
+      </div>
+      <div class="field">
+        <label>پایان زمان ثبت‌نام (تاریخ و ساعت)</label>
+        <input type="datetime-local" id="fTimerEnds">
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>چت</h3>
+      <div class="field">
+        <label>Slow Mode (ثانیه بین هر پیام، ۰ = خاموش)</label>
+        <input type="number" id="fSlowMode" min="0">
+      </div>
+      <div class="row">
+        <label>چت بعد از پایان قرعه‌کشی هم باز بمونه</label>
+        <div class="switch" id="swChatAfterEnd"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>جایزه‌ها</h3>
+      <div class="row">
+        <label>نمایش جایزه‌ها قبل از قرعه‌کشی</label>
+        <div class="switch" id="swShowPrizes"></div>
+      </div>
+      <div id="prizesList" style="display:flex;flex-direction:column;gap:8px;"></div>
+      <button class="btn btn-ghost btn-sm" id="addPrizeBtn" style="align-self:start;">+ افزودن جایزه</button>
+    </div>
+
+    <div class="card">
+      <button class="btn btn-primary" id="saveSettingsBtn">ذخیره‌ی تنظیمات</button>
+      <div class="save-msg" id="settingsSaveMsg"></div>
+    </div>
+  </div>
+
+  <!-- ===== REGISTRANTS PANEL ===== -->
+  <div class="panel" id="panel-registrants">
+    <div class="card">
+      <h3>ثبت‌نامی‌ها (<span id="regCount">0</span>)</h3>
+      <input class="search-input" id="regSearch" placeholder="جستجو با نام یا بج (#026)...">
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>بج</th><th>نام</th><th>زمان ثبت‌نام</th><th>وضعیت</th><th></th></tr></thead>
+          <tbody id="regTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== DRAW PANEL ===== -->
+  <div class="panel" id="panel-draw">
+    <div class="card">
+      <h3>کنترل قرعه‌کشی</h3>
+      <div class="draw-status" id="drawStatusBox">آماده برای شروع</div>
+      <div class="row" style="gap:10px;">
+        <button class="btn btn-primary" id="startDrawBtn">شروع قرعه‌کشی</button>
+        <button class="btn btn-danger" id="endDrawBtn">پایان قرعه‌کشی</button>
+        <button class="btn btn-ghost" id="resetDrawBtn">بازنشانی کامل (Reset)</button>
+      </div>
+      <div class="warn-box">⚠️ «بازنشانی کامل» همه‌ی ثبت‌نامی‌ها، چت، و نتایج قرعه‌کشی رو برای همیشه پاک می‌کنه و ثبت‌نام رو دوباره باز می‌کنه. این کار برگشت‌ناپذیره.</div>
+    </div>
+
+    <div class="card">
+      <h3>انتخاب برندگان</h3>
+      <div class="hint">برای هر رتبه، برنده رو از لیست پایین (بر اساس نام و بج) انتخاب کن. چون ممکنه چند نفر اسم یکسان داشته باشن، حتماً بج (#شماره) رو هم چک کن.</div>
+      <div class="winner-pick-row">
+        <select id="winnerRankPick"></select>
+        <select id="winnerPersonPick"></select>
+        <button class="btn btn-primary btn-sm" id="addWinnerBtn">افزودن به لیست برندگان</button>
+      </div>
+      <div id="winnersListBox" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+  </div>
+
+  <!-- ===== ADMINS PANEL ===== -->
+  <div class="panel" id="panel-admins">
+    <div class="card" id="ownerOnlyAddAdmin">
+      <h3>افزودن ادمین جدید (فقط مالک)</h3>
+      <div class="field"><label>ایمیل</label><input type="email" id="newAdminEmail"></div>
+      <div class="field"><label>رمز عبور</label><input type="password" id="newAdminPass"></div>
+      <button class="btn btn-primary btn-sm" id="addAdminBtn" style="align-self:start;">افزودن ادمین</button>
+      <div class="save-msg" id="addAdminMsg"></div>
+    </div>
+    <div class="card">
+      <h3>لیست ادمین‌ها</h3>
+      <div id="adminsListBox" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+  </div>
+
+  <!-- ===== LOGS PANEL ===== -->
+  <div class="panel" id="panel-logs">
+    <div class="card">
+      <h3>لاگ فعالیت ادمین‌ها</h3>
+      <div id="logsBox"></div>
+    </div>
+  </div>
+
+  <!-- ===== BACKUP PANEL ===== -->
+  <div class="panel" id="panel-backup">
+    <div class="card">
+      <h3>بکاپ‌گیری</h3>
+      <div class="row">
+        <label>فعال‌سازی بکاپ خودکار</label>
+        <div class="switch" id="swAutoBackup"></div>
+      </div>
+      <div class="warn-box">⚠️ بکاپ «خودکار» واقعی نیاز به یه سرور پس‌زمینه (مثل Cloud Functions) داره که هنوز پیاده نشده — این سوییچ فقط تنظیمش رو ذخیره می‌کنه. برای بکاپ واقعی همین الان، از دکمه‌ی زیر استفاده کن.</div>
+      <button class="btn btn-primary" id="manualBackupBtn" style="align-self:start;">دانلود بکاپ همین الان (JSON)</button>
+      <div class="save-msg" id="backupMsg"></div>
+    </div>
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import {
+  getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut,
+  createUserWithEmailAndPassword
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import {
+  getFirestore, doc, getDoc, setDoc, collection, addDoc, updateDoc, deleteDoc,
+  onSnapshot, query, orderBy, limit, serverTimestamp, writeBatch, getDocs
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDXUGqlKv-WvDUt-eB5LfZ8y_HCYlaxzXQ",
+  authDomain: "mavrix-57861.firebaseapp.com",
+  projectId: "mavrix-57861",
+  storageBucket: "mavrix-57861.firebasestorage.app",
+  messagingSenderId: "38679970456",
+  appId: "1:38679970456:web:4cb2d44a02134d239d46ed"
+};
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+let currentUser = null;
+let currentAdminDoc = null; // {role, permissions, email}
+let settings = {};
+let registrants = [];
+let admins = [];
+
+/* ---------------- login ---------------- */
+document.getElementById('loginBtn').addEventListener('click', doLogin);
+document.getElementById('loginPass').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+
+async function doLogin(){
+  const email = document.getElementById('loginEmail').value.trim();
+  const pass = document.getElementById('loginPass').value;
+  const errEl = document.getElementById('loginErr');
+  errEl.textContent = '';
+  if(!email || !pass){ errEl.textContent = 'ایمیل و رمز عبور رو وارد کن.'; return; }
+  document.getElementById('loginBtn').disabled = true;
+  try{
+    await signInWithEmailAndPassword(auth, email, pass);
+  }catch(e){
+    errEl.textContent = 'ورود ناموفق بود. ایمیل یا رمز عبور اشتباهه.';
+  }
+  document.getElementById('loginBtn').disabled = false;
+}
+
+document.getElementById('logoutBtn').addEventListener('click', ()=> signOut(auth));
+
+onAuthStateChanged(auth, async (user)=>{
+  if(!user){
+    currentUser = null; currentAdminDoc = null;
+    document.getElementById('loginScreen').style.display = 'flex';
+    document.getElementById('dash').style.display = 'none';
+    return;
+  }
+  currentUser = user;
+  const adminSnap = await getDoc(doc(db,'admins', user.uid));
+  if(!adminSnap.exists()){
+    document.getElementById('loginErr').textContent = 'این حساب دسترسی مدیریت نداره.';
+    await signOut(auth);
+    return;
+  }
+  currentAdminDoc = adminSnap.data();
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('dash').style.display = 'block';
+  document.getElementById('whoAmI').textContent = `${currentAdminDoc.email || user.email} — ${currentAdminDoc.role === 'owner' ? 'مالک' : 'ادمین'}`;
+  document.getElementById('ownerOnlyAddAdmin').style.display = currentAdminDoc.role === 'owner' ? 'flex' : 'none';
+  initDashboardData();
+});
+
+/* ---------------- tabs ---------------- */
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+  });
+});
+
+/* ---------------- admin log helper ---------------- */
+async function logAction(action){
+  try{
+    await addDoc(collection(db,'adminLogs'), {
+      adminEmail: currentAdminDoc?.email || currentUser?.email || 'unknown',
+      action, timestamp: serverTimestamp()
+    });
+  }catch(e){}
+}
+
+/* ---------------- data init ---------------- */
+let dataInitialized = false;
+function initDashboardData(){
+  if(dataInitialized) return;
+  dataInitialized = true;
+
+  onSnapshot(doc(db,'settings','main'), (snap)=>{
+    settings = snap.exists() ? snap.data() : {};
+    renderSettingsForm();
+    renderDrawStatus();
+    renderWinnersList();
+  });
+
+  onSnapshot(collection(db,'registrants'), (snap)=>{
+    registrants = [];
+    snap.forEach(d=> registrants.push({id:d.id, ...d.data()}));
+    renderRegistrantsTable();
+    renderWinnerPickers();
+  });
+
+  onSnapshot(collection(db,'admins'), (snap)=>{
+    admins = [];
+    snap.forEach(d=> admins.push({id:d.id, ...d.data()}));
+    renderAdminsList();
+  });
+
+  const logsQ = query(collection(db,'adminLogs'), orderBy('timestamp','desc'), limit(100));
+  onSnapshot(logsQ, (snap)=>{
+    const items = [];
+    snap.forEach(d=> items.push(d.data()));
+    renderLogs(items);
+  });
+}
+
+/* ============ SETTINGS TAB ============ */
+function bindSwitch(id, key){
+  const el = document.getElementById(id);
+  el.addEventListener('click', ()=>{
+    el.classList.toggle('on');
+  });
+}
+bindSwitch('swRegOpen');
+bindSwitch('swChatAfterEnd');
+bindSwitch('swShowPrizes');
+bindSwitch('swAutoBackup');
+
+let localPrizes = [];
+function renderSettingsForm(){
+  document.getElementById('swRegOpen').classList.toggle('on', !!settings.registrationOpen);
+  document.getElementById('swChatAfterEnd').classList.toggle('on', !!settings.chatEnabledAfterEnd);
+  document.getElementById('swShowPrizes').classList.toggle('on', !!settings.showPrizesBeforeDraw);
+  document.getElementById('swAutoBackup').classList.toggle('on', !!settings.autoBackupEnabled);
+  document.getElementById('fCapacity').value = settings.capacity ?? 100;
+  document.getElementById('fSlowMode').value = settings.slowModeSeconds ?? 0;
+  if(settings.timerEndsAt){
+    const d = settings.timerEndsAt.toDate ? settings.timerEndsAt.toDate() : new Date(settings.timerEndsAt);
+    document.getElementById('fTimerEnds').value = toLocalInputValue(d);
+  }
+  localPrizes = Array.isArray(settings.prizes) ? JSON.parse(JSON.stringify(settings.prizes)) : [];
+  renderPrizesList();
+}
+function toLocalInputValue(d){
+  const pad = n=>String(n).padStart(2,'0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function renderPrizesList(){
+  const box = document.getElementById('prizesList');
+  box.innerHTML = localPrizes.map((p,i)=>`
+    <div class="prize-row">
+      <input data-idx="${i}" data-field="rank" placeholder="رتبه (مثلاً 1)" value="${escAttr(p.rank||'')}">
+      <input data-idx="${i}" data-field="text" placeholder="متن جایزه" value="${escAttr(p.text||'')}">
+      <button class="btn btn-danger btn-sm" data-remove="${i}">حذف</button>
+    </div>`).join('');
+  box.querySelectorAll('input').forEach(inp=>{
+    inp.addEventListener('input', ()=>{
+      const i = +inp.dataset.idx, f = inp.dataset.field;
+      localPrizes[i][f] = inp.value;
+    });
+  });
+  box.querySelectorAll('[data-remove]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      localPrizes.splice(+btn.dataset.remove,1);
+      renderPrizesList();
+    });
+  });
+}
+function escAttr(s){ return String(s).replace(/"/g,'&quot;'); }
+
+document.getElementById('addPrizeBtn').addEventListener('click', ()=>{
+  localPrizes.push({rank:String(localPrizes.length+1), text:''});
+  renderPrizesList();
+});
+
+document.getElementById('saveSettingsBtn').addEventListener('click', async ()=>{
+  const msg = document.getElementById('settingsSaveMsg');
+  msg.textContent = '';
+  const payload = {
+    registrationOpen: document.getElementById('swRegOpen').classList.contains('on'),
+    chatEnabledAfterEnd: document.getElementById('swChatAfterEnd').classList.contains('on'),
+    showPrizesBeforeDraw: document.getElementById('swShowPrizes').classList.contains('on'),
+    autoBackupEnabled: document.getElementById('swAutoBackup').classList.contains('on'),
+    capacity: parseInt(document.getElementById('fCapacity').value || '0', 10),
+    slowModeSeconds: parseInt(document.getElementById('fSlowMode').value || '0', 10),
+    prizes: localPrizes.filter(p=>p.rank || p.text)
+  };
+  const timerVal = document.getElementById('fTimerEnds').value;
+  if(timerVal){ payload.timerEndsAt = new Date(timerVal); }
+  try{
+    await setDoc(doc(db,'settings','main'), payload, { merge:true });
+    msg.textContent = 'ذخیره شد ✓';
+    logAction('به‌روزرسانی تنظیمات');
+    setTimeout(()=> msg.textContent='', 3000);
+  }catch(e){
+    msg.textContent = 'خطا در ذخیره‌سازی.';
+    msg.style.color = 'var(--crimson-bright)';
+  }
+});
+
+/* ============ REGISTRANTS TAB ============ */
+function renderRegistrantsTable(){
+  document.getElementById('regCount').textContent = registrants.length;
+  const q = (document.getElementById('regSearch').value||'').trim().toLowerCase();
+  const rows = registrants
+    .filter(r=>{
+      if(!q) return true;
+      const badgeStr = '#'+String(r.badge).padStart(3,'0');
+      return r.name.toLowerCase().includes(q) || badgeStr.includes(q);
+    })
+    .sort((a,b)=> (a.badge||0)-(b.badge||0))
+    .map(r=>{
+      const time = r.registeredAt?.toDate ? r.registeredAt.toDate().toLocaleString('fa-IR') : '—';
+      return `<tr>
+        <td><span class="badge-tag">#${String(r.badge).padStart(3,'0')}</span></td>
+        <td>${escHtmlD(r.name)}</td>
+        <td style="font-size:.75rem;color:var(--text-dim);">${time}</td>
+        <td><span class="pill ${r.blocked?'blocked':'active'}">${r.blocked?'مسدود':'فعال'}</span></td>
+        <td><button class="btn btn-sm ${r.blocked?'btn-primary':'btn-danger'}" data-toggle-block="${r.id}" data-blocked="${!!r.blocked}">${r.blocked?'رفع مسدودی':'مسدود کردن'}</button></td>
+      </tr>`;
+    }).join('');
+  document.getElementById('regTableBody').innerHTML = rows || `<tr><td colspan="5" style="text-align:center;color:var(--text-dim);padding:20px;">هیچ‌کس ثبت‌نام نکرده</td></tr>`;
+
+  document.querySelectorAll('[data-toggle-block]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const id = btn.dataset.toggleBlock;
+      const wasBlocked = btn.dataset.blocked === 'true';
+      try{
+        await updateDoc(doc(db,'registrants',id), { blocked: !wasBlocked });
+        logAction(`${!wasBlocked ? 'مسدود کردن' : 'رفع مسدودی'} ثبت‌نامی ${id}`);
+      }catch(e){ alert('خطا در تغییر وضعیت.'); }
+    });
+  });
+}
+document.getElementById('regSearch').addEventListener('input', renderRegistrantsTable);
+function escHtmlD(s){ return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ============ DRAW TAB ============ */
+function renderDrawStatus(){
+  const box = document.getElementById('drawStatusBox');
+  if(settings.drawEnded){ box.textContent = 'قرعه‌کشی پایان یافته'; box.classList.remove('live'); }
+  else if(settings.drawStarted){ box.textContent = '🔴 قرعه‌کشی در حال اجراست'; box.classList.add('live'); }
+  else { box.textContent = 'آماده برای شروع'; box.classList.remove('live'); }
+}
+
+document.getElementById('startDrawBtn').addEventListener('click', async ()=>{
+  if(!confirm('شروع قرعه‌کشی؟ بعد از این، ثبت‌نام و چت برای همه غیرفعال می‌شه.')) return;
+  await setDoc(doc(db,'settings','main'), { drawStarted:true, drawEnded:false, registrationOpen:false }, { merge:true });
+  logAction('شروع قرعه‌کشی');
+});
+
+document.getElementById('endDrawBtn').addEventListener('click', async ()=>{
+  if(!confirm('پایان قرعه‌کشی؟ نتایج برای همه نمایش داده می‌شه.')) return;
+  await setDoc(doc(db,'settings','main'), { drawEnded:true }, { merge:true });
+  logAction('پایان قرعه‌کشی');
+});
+
+document.getElementById('resetDrawBtn').addEventListener('click', async ()=>{
+  if(currentAdminDoc.role !== 'owner'){ alert('فقط مالک می‌تونه بازنشانی کامل انجام بده.'); return; }
+  const c1 = confirm('⚠️ این کار همه‌ی ثبت‌نامی‌ها، چت، و برندگان رو برای همیشه پاک می‌کنه. مطمئنی؟');
+  if(!c1) return;
+  const c2 = confirm('این عمل غیرقابل بازگشته. برای تأیید نهایی دوباره تأیید کن.');
+  if(!c2) return;
+  try{
+    const regSnap = await getDocs(collection(db,'registrants'));
+    const chatSnap = await getDocs(collection(db,'chat'));
+    const batch1 = writeBatch(db);
+    regSnap.forEach(d=> batch1.delete(d.ref));
+    await batch1.commit();
+    const batch2 = writeBatch(db);
+    chatSnap.forEach(d=> batch2.delete(d.ref));
+    await batch2.commit();
+    await setDoc(doc(db,'settings','main'), {
+      drawStarted:false, drawEnded:false, registrationOpen:true, winners:[]
+    }, { merge:true });
+    logAction('بازنشانی کامل پروژه (Reset)');
+    alert('بازنشانی انجام شد.');
+  }catch(e){
+    alert('خطا در بازنشانی: ' + e.message);
+  }
+});
+
+function renderWinnerPickers(){
+  const rankSel = document.getElementById('winnerRankPick');
+  const existing = (settings.prizes||[]).map(p=>p.rank);
+  const ranks = existing.length ? existing : ['1','2','3'];
+  rankSel.innerHTML = ranks.map(r=>`<option value="${escAttr(r)}">رتبه ${escAttr(r)}</option>`).join('');
+
+  const personSel = document.getElementById('winnerPersonPick');
+  const available = registrants.filter(r=>!r.blocked).sort((a,b)=>(a.badge||0)-(b.badge||0));
+  personSel.innerHTML = available.map(r=>
+    `<option value="${r.id}">#${String(r.badge).padStart(3,'0')} — ${escAttr(r.name)}</option>`
+  ).join('') || `<option value="">کسی ثبت‌نام نکرده</option>`;
+}
+
+document.getElementById('addWinnerBtn').addEventListener('click', async ()=>{
+  const rank = document.getElementById('winnerRankPick').value;
+  const personId = document.getElementById('winnerPersonPick').value;
+  if(!personId){ alert('یه نفر رو انتخاب کن.'); return; }
+  const person = registrants.find(r=>r.id===personId);
+  if(!person) return;
+  const prize = (settings.prizes||[]).find(p=>p.rank===rank);
+  const winners = Array.isArray(settings.winners) ? [...settings.winners] : [];
+  winners.push({
+    rank, name: person.name, badge: person.badge, fingerprint: person.fingerprint,
+    text: prize ? prize.text : ''
+  });
+  await setDoc(doc(db,'settings','main'), { winners }, { merge:true });
+  logAction(`افزودن برنده رتبه ${rank}: ${person.name} #${String(person.badge).padStart(3,'0')}`);
+});
+
+function renderWinnersList(){
+  const box = document.getElementById('winnersListBox');
+  const winners = settings.winners || [];
+  box.innerHTML = winners.map((w,i)=>`
+    <div class="winner-list-item">
+      <span>رتبه ${escHtmlD(w.rank)}: <span class="badge-tag">#${String(w.badge).padStart(3,'0')}</span>${escHtmlD(w.name)} ${w.text?('— '+escHtmlD(w.text)):''}</span>
+      <button class="btn btn-danger btn-sm" data-remove-winner="${i}">حذف</button>
+    </div>`).join('') || `<div class="hint">هنوز برنده‌ای ثبت نشده.</div>`;
+  box.querySelectorAll('[data-remove-winner]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      const winners = [...(settings.winners||[])];
+      winners.splice(+btn.dataset.removeWinner, 1);
+      await setDoc(doc(db,'settings','main'), { winners }, { merge:true });
+      logAction('حذف یک برنده از لیست');
+    });
+  });
+}
+
+/* ============ ADMINS TAB ============ */
+function renderAdminsList(){
+  const box = document.getElementById('adminsListBox');
+  box.innerHTML = admins.map(a=>`
+    <div class="winner-list-item">
+      <span>${escHtmlD(a.email)} — ${a.role==='owner'?'مالک':'ادمین'}</span>
+      ${(currentAdminDoc.role==='owner' && a.role!=='owner') ? `<button class="btn btn-danger btn-sm" data-remove-admin="${a.id}">حذف</button>` : ''}
+    </div>`).join('');
+  box.querySelectorAll('[data-remove-admin]').forEach(btn=>{
+    btn.addEventListener('click', async ()=>{
+      if(!confirm('این ادمین حذف بشه؟')) return;
+      await deleteDoc(doc(db,'admins',btn.dataset.removeAdmin));
+      logAction('حذف یک ادمین');
+    });
+  });
+}
+
+document.getElementById('addAdminBtn').addEventListener('click', async ()=>{
+  const email = document.getElementById('newAdminEmail').value.trim();
+  const pass = document.getElementById('newAdminPass').value;
+  const msg = document.getElementById('addAdminMsg');
+  msg.textContent = '';
+  if(!email || !pass){ msg.textContent = 'ایمیل و رمز رو وارد کن.'; msg.style.color='var(--crimson-bright)'; return; }
+  try{
+    // secondary app instance so we don't disturb the owner's current session
+    const { initializeApp: initSecondary, deleteApp } = await import("https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js");
+    const secondaryApp = initSecondary(firebaseConfig, 'secondary-' + Date.now());
+    const secondaryAuth = getAuth(secondaryApp);
+    const cred = await createUserWithEmailAndPassword(secondaryAuth, email, pass);
+    const newUid = cred.user.uid;
+    await signOut(secondaryAuth);
+    await deleteApp(secondaryApp);
+
+    await setDoc(doc(db,'admins', newUid), {
+      email, role:'admin', addedAt: serverTimestamp()
+    });
+    logAction(`افزودن ادمین جدید: ${email}`);
+    msg.style.color = 'var(--green)';
+    msg.textContent = 'ادمین اضافه شد ✓';
+    document.getElementById('newAdminEmail').value = '';
+    document.getElementById('newAdminPass').value = '';
+  }catch(e){
+    msg.style.color = 'var(--crimson-bright)';
+    msg.textContent = 'خطا: ' + (e.message || 'افزودن ادمین ناموفق بود.');
+  }
+});
+
+/* ============ LOGS TAB ============ */
+function renderLogs(items){
+  const box = document.getElementById('logsBox');
+  box.innerHTML = items.map(l=>{
+    const time = l.timestamp?.toDate ? l.timestamp.toDate().toLocaleString('fa-IR') : '—';
+    return `<div class="log-item"><b>${escHtmlD(l.adminEmail)}</b> — ${escHtmlD(l.action)} <span style="opacity:.6;">(${time})</span></div>`;
+  }).join('') || `<div class="hint">هنوز فعالیتی ثبت نشده.</div>`;
+}
+
+/* ============ BACKUP TAB ============ */
+document.getElementById('manualBackupBtn').addEventListener('click', async ()=>{
+  const msg = document.getElementById('backupMsg');
+  msg.textContent = 'در حال آماده‌سازی...';
+  try{
+    const [regSnap, chatSnap, settingsSnap] = await Promise.all([
+      getDocs(collection(db,'registrants')),
+      getDocs(collection(db,'chat')),
+      getDoc(doc(db,'settings','main'))
+    ]);
+    const data = {
+      exportedAt: new Date().toISOString(),
+      settings: settingsSnap.exists() ? settingsSnap.data() : {},
+      registrants: [], chat: []
+    };
+    regSnap.forEach(d=> data.registrants.push({id:d.id, ...d.data()}));
+    chatSnap.forEach(d=> data.chat.push({id:d.id, ...d.data()}));
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `mavrix-backup-${Date.now()}.json`;
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+    msg.style.color = 'var(--green)';
+    msg.textContent = 'بکاپ دانلود شد ✓';
+    logAction('دانلود بکاپ دستی');
+  }catch(e){
+    msg.style.color = 'var(--crimson-bright)';
+    msg.textContent = 'خطا در تهیه‌ی بکاپ.';
+  }
+});
+</script>
+</body>
+</html>
