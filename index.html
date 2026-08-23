@@ -1,594 +1,441 @@
 <!DOCTYPE html>
-<html lang="fa" dir="rtl">
+<html lang="fa" dir="rtl" data-lang="fa">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>MAVRIX — قرعه‌کشی آنلاین</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MAVRIX</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
 <style>
   :root{
-    --bg-0:#08080c;
-    --bg-1:#0f0f16;
+    --bg-0:#0a0a0c;
+    --bg-1:#111114;
     --glass:rgba(255,255,255,.045);
-    --glass-strong:rgba(255,255,255,.08);
-    --border:rgba(255,255,255,.10);
-    --border-strong:rgba(255,255,255,.18);
-    --crimson:#c4123f;
-    --crimson-bright:#ff2255;
-    --silver:#b9bdc7;
-    --steel:#7d8391;
-    --text:#f3f3f6;
-    --text-dim:#9a9ca6;
+    --glass-brd:rgba(255,255,255,.09);
+    --glass-brd-strong:rgba(255,255,255,.16);
+    --crimson:#c31432;
+    --crimson-2:#e0294a;
+    --crimson-glow:rgba(224,41,74,.45);
+    --silver:#b9bfc9;
+    --silver-dim:#7d838d;
+    --text-0:#f4f4f6;
+    --text-1:#a9adb5;
+    --text-2:#6c7078;
     --radius:18px;
-    --shadow:0 20px 60px -20px rgba(0,0,0,.7);
+    --radius-sm:12px;
+    --ff-fa:'Vazirmatn',sans-serif;
+    --ff-num:'Space Grotesk','Vazirmatn',sans-serif;
   }
-  *{box-sizing:border-box;margin:0;padding:0;}
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color: transparent;}
   html,body{height:100%;}
+  button, .btn, a, .row, #langBtn, #langBtnM, #chatFab, #adminGate{
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+    outline: none;
+  }
+  button:focus-visible, .btn:focus-visible{
+    outline: 2px solid var(--crimson-2);
+    outline-offset: 2px;
+  }
   body{
+    font-family:var(--ff-fa);
     background:
-      radial-gradient(1200px 600px at 15% -10%, rgba(196,18,63,.14), transparent 60%),
-      radial-gradient(1000px 500px at 100% 10%, rgba(120,130,150,.08), transparent 55%),
+      radial-gradient(1200px 600px at 15% -10%, rgba(195,20,50,.12), transparent 60%),
+      radial-gradient(900px 500px at 100% 10%, rgba(120,130,150,.08), transparent 55%),
       var(--bg-0);
-    color:var(--text);
-    font-family:'Vazirmatn',sans-serif;
+    color:var(--text-0);
     min-height:100%;
     overflow-x:hidden;
+    -webkit-font-smoothing:antialiased;
   }
-  [dir="ltr"] body{direction:ltr;}
+  html[data-lang="en"] body, [data-lang="en"] body { font-family:var(--ff-num), 'Vazirmatn', sans-serif; }
+  ::selection{ background:var(--crimson); color:#fff; }
+  a{color:inherit;}
+  button{ font-family:inherit; cursor:pointer; }
+  .num{ font-family:var(--ff-num); font-variant-numeric: tabular-nums; }
+
   .glass{
     background:var(--glass);
-    backdrop-filter:blur(20px) saturate(140%);
-    -webkit-backdrop-filter:blur(20px) saturate(140%);
-    border:1px solid var(--border);
+    border:1px solid var(--glass-brd);
     border-radius:var(--radius);
-    box-shadow:var(--shadow);
+    backdrop-filter: blur(18px) saturate(140%);
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
   }
-  a{color:inherit;text-decoration:none;}
-  button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
-  input{font-family:inherit;}
 
-  /* ================= LAYOUT SHELL ================= */
-  .app{
-    max-width:1180px;
-    margin:0 auto;
-    padding:20px 20px 100px;
-    display:flex;
-    flex-direction:column;
+  /* ================= HEADER ================= */
+  header{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:18px clamp(16px,4vw,40px);
     gap:16px;
-    position:relative;
-    z-index:1;
   }
-
-  /* ================= HEADER (desktop 3-part) ================= */
-  header.top{
-    display:grid;
-    grid-template-columns:1fr auto 1fr;
-    align-items:center;
-    padding:16px 26px;
-    position:relative;
-  }
-  .head-date{
-    font-size:.85rem;
-    color:var(--text-dim);
-    letter-spacing:.02em;
-    justify-self:start;
-  }
-  .head-name{
-    justify-self:center;
-    text-align:center;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-  }
-  .logo-img{
-    height:34px;
-    width:auto;
-    display:block;
-    filter:drop-shadow(0 4px 16px rgba(196,18,63,.35));
-    -webkit-user-drag:none;
-    user-select:none;
-    -webkit-touch-callout:none;
-    pointer-events:none;
-  }
-  .logo-img-mobile{
-    height:48px;
-  }
-  .head-right{
-    justify-self:end;
-    display:flex;
-    align-items:center;
-    gap:14px;
-  }
-  .timer{
-    font-variant-numeric:tabular-nums;
+  .brand{
+    font-family:var(--ff-num);
     font-weight:700;
-    font-size:1.05rem;
-    padding:8px 14px;
-    border-radius:12px;
-    background:var(--glass-strong);
-    border:1px solid var(--border);
-    letter-spacing:.03em;
-  }
-  .timer.urgent{color:var(--crimson-bright); border-color:rgba(196,18,63,.5);}
-  .lang-switch{
-    width:38px;height:38px;
-    display:flex;align-items:center;justify-content:center;
-    border-radius:50%;
-    background:var(--glass-strong);
-    border:1px solid var(--border);
-    font-size:.72rem;
-    font-weight:700;
-    position:relative;
-  }
-  .lang-switch .globe{position:absolute;font-size:1.1rem;opacity:.35;}
-  .lang-switch .label{position:relative;z-index:1;}
-
-  /* mobile-only header block */
-  .mobile-head{display:none;}
-
-  /* ================= PRIZE BOX ================= */
-  .prize-box{
-    padding:16px 22px;
+    font-size:22px;
+    letter-spacing:1px;
     display:flex;
     align-items:center;
-    gap:14px;
-    justify-content:center;
-    text-align:center;
-    border-color:rgba(196,18,63,.28);
   }
-  .prize-box.hidden{display:none;}
-  .prize-icon{font-size:1.3rem;}
-  .prize-text{font-size:.95rem;color:var(--silver);}
-  .prize-text b{color:var(--text);font-weight:700;}
+  .brand .x{ color:var(--crimson-2); }
+  header .side{ display:flex; align-items:center; gap:14px; font-size:13px; color:var(--text-1); }
+  header .side .val{ color:var(--text-0); font-weight:600; }
+  #langBtn{
+    width:34px; height:34px; border-radius:50%;
+    background:var(--glass); border:1px solid var(--glass-brd); color:var(--text-1);
+    font-size:11px; font-weight:700; letter-spacing:.5px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  #langBtn:hover{ border-color:var(--glass-brd-strong); color:var(--text-0); }
 
-  /* ================= MAIN ROW (main box + names box) ================= */
-  .main-row{
+  .mobile-only{ display:none; }
+  .desktop-only{ display:flex; }
+
+  /* ================= LAYOUT ================= */
+  main{
+    max-width:1180px; margin:0 auto; padding:8px clamp(14px,4vw,40px) 100px;
     display:grid;
-    grid-template-columns:1fr 300px;
-    gap:16px;
+    grid-template-columns: 1fr 300px;
+    gap:20px;
     align-items:start;
-    transition:grid-template-columns .6s cubic-bezier(.65,0,.35,1);
   }
-  .main-row.drawing{
-    grid-template-columns:1fr 0px;
-  }
-  .main-row.drawing .names-box{
-    opacity:0;
-    pointer-events:none;
-    transform:scale(.96);
-  }
+  .col-main{ display:flex; flex-direction:column; gap:16px; min-width:0; }
+  .col-side{ display:flex; flex-direction:column; gap:16px; }
 
-  .main-box{
-    position:relative;
-    min-height:420px;
-    padding:34px 30px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    overflow:hidden;
-    transition:min-height .6s cubic-bezier(.65,0,.35,1);
-  }
-  .main-row.drawing .main-box{min-height:520px;}
+  /* ---- prize box ---- */
+  #prizeBox{ padding:16px 20px; display:none; }
+  #prizeBox.show{ display:block; }
+  #prizeBox .label{ font-size:11px; color:var(--crimson-2); letter-spacing:1px; font-weight:700; margin-bottom:6px; }
+  #prizeBox .items{ display:flex; flex-direction:column; gap:4px; font-size:14px; color:var(--text-0); }
+  #prizeBox .items .rank{ color:var(--silver); font-weight:600; }
 
-  .capacity-pill{
-    position:absolute;
-    top:16px;
-    inset-inline-end:18px;
-    font-variant-numeric:tabular-nums;
-    font-weight:800;
-    font-size:1rem;
-    padding:6px 14px;
-    border-radius:20px;
-    background:var(--glass-strong);
-    border:1px solid var(--border);
-    color:var(--silver);
-  }
+  /* ---- main box ---- */
+  #mainBox{ padding:clamp(20px,4vw,40px); min-height:340px; position:relative; overflow:hidden; transition: all .6s cubic-bezier(.2,.8,.2,1); }
 
-  /* --- registration stage --- */
-  .stage{width:100%;max-width:380px;display:none;flex-direction:column;align-items:center;gap:18px;text-align:center;}
-  .stage.active{display:flex;}
-  .stage h2{font-size:1.3rem;font-weight:800;}
-  .stage p.sub{color:var(--text-dim);font-size:.9rem;line-height:1.7;}
+  .stage{ display:none; }
+  .stage.active{ display:block; }
 
-  .reg-form{width:100%;display:flex;flex-direction:column;gap:12px;}
-  .reg-input{
-    width:100%;
-    padding:14px 18px;
-    border-radius:14px;
-    background:rgba(255,255,255,.04);
-    border:1px solid var(--border);
-    color:var(--text);
-    font-size:1rem;
-    outline:none;
-    transition:border-color .2s, background .2s;
-    text-align:center;
+  /* pre-registration hero */
+  #stageIdle{ text-align:center; padding:20px 0; }
+  #stageIdle .cap{ font-size:12px; color:var(--text-2); letter-spacing:1px; margin-bottom:10px; text-transform:uppercase; }
+  #stageIdle h1{ font-size:clamp(24px,4vw,34px); font-weight:800; margin-bottom:10px; }
+  #stageIdle p{ color:var(--text-1); font-size:14px; margin-bottom:26px; }
+  .btn{
+    display:inline-flex; align-items:center; justify-content:center; gap:8px;
+    padding:13px 28px; border-radius:999px; border:none;
+    background:linear-gradient(135deg,var(--crimson),var(--crimson-2));
+    color:#fff; font-weight:700; font-size:14.5px;
+    box-shadow:0 8px 24px var(--crimson-glow);
+    transition:transform .15s ease, box-shadow .15s ease;
   }
-  .reg-input:focus{border-color:var(--crimson);background:rgba(255,255,255,.06);}
-  .reg-btn{
-    padding:14px 18px;
-    border-radius:14px;
-    font-weight:800;
-    font-size:1rem;
-    background:linear-gradient(135deg,var(--crimson),var(--crimson-bright));
-    color:#fff;
-    box-shadow:0 10px 30px -10px rgba(196,18,63,.6);
-    transition:transform .15s, box-shadow .15s;
+  .btn:hover{ transform:translateY(-2px); box-shadow:0 12px 30px var(--crimson-glow); }
+  .btn:active{ transform:translateY(0); }
+  .btn.ghost{
+    background:transparent; border:1px solid var(--glass-brd-strong); color:var(--text-0);
+    box-shadow:none;
   }
-  .reg-btn:active{transform:scale(.98);}
-  .reg-btn:disabled{opacity:.5;cursor:not-allowed;}
-  .reg-error{color:var(--crimson-bright);font-size:.85rem;min-height:1.2em;}
-  .reg-success{
-    display:flex;flex-direction:column;align-items:center;gap:10px;
-  }
-  .reg-success .check{
-    width:56px;height:56px;border-radius:50%;
-    background:rgba(196,18,63,.14);
-    border:1px solid rgba(196,18,63,.4);
-    display:flex;align-items:center;justify-content:center;
-    font-size:1.6rem;color:var(--crimson-bright);
-  }
+  .btn.ghost:hover{ border-color:var(--silver); }
+  .btn:disabled{ opacity:.4; cursor:not-allowed; transform:none; box-shadow:none; }
+  .btn.small{ padding:9px 16px; font-size:13px; }
 
-  .closed-note{color:var(--text-dim);font-size:.9rem;}
-
-  /* --- drawing stage: floating names --- */
-  .draw-stage{
-    position:relative;
-    width:100%;
-    height:100%;
-    min-height:420px;
-    display:none;
+  /* registration form */
+  #stageForm{ max-width:380px; margin:0 auto; text-align:center; padding:10px 0; }
+  #stageForm h2{ font-size:19px; font-weight:700; margin-bottom:18px; }
+  .field{ text-align:right; margin-bottom:14px; }
+  .field label{ display:block; font-size:12px; color:var(--text-2); margin-bottom:6px; }
+  .field input{
+    width:100%; padding:13px 16px; border-radius:12px;
+    background:rgba(255,255,255,.04); border:1px solid var(--glass-brd);
+    color:var(--text-0); font-size:15px; font-family:inherit;
+    outline:none; transition:border-color .15s;
   }
-  .draw-stage.active{display:block;}
+  .field input:focus{ border-color:var(--crimson-2); }
+  #captchaRow{ display:flex; align-items:center; gap:10px; }
+  #captchaRow .q{ font-size:14px; color:var(--text-1); white-space:nowrap; }
+  #formMsg{ font-size:13px; margin-top:10px; min-height:18px; }
+  #formMsg.err{ color:var(--crimson-2); }
+  #formMsg.ok{ color:#5fd08a; }
+
+  /* success state */
+  #stageDone{ text-align:center; padding:30px 0; }
+  #stageDone .tick{ font-size:40px; margin-bottom:14px; }
+  #stageDone h2{ font-size:18px; font-weight:700; margin-bottom:6px; }
+  #stageDone p{ color:var(--text-1); font-size:13.5px; }
+
+  /* draw stage */
+  #stageDraw{ min-height:300px; position:relative; }
+  #shuffleField{ position:relative; height:280px; }
   .float-name{
-    position:absolute;
-    font-weight:700;
-    font-size:1.15rem;
-    color:var(--silver);
-    opacity:0;
-    white-space:nowrap;
-    transition:opacity .5s ease, transform .5s ease;
-    text-shadow:0 2px 12px rgba(0,0,0,.5);
+    position:absolute; font-family:var(--ff-num); font-weight:600;
+    color:var(--silver); font-size:15px; opacity:0; white-space:nowrap;
+    transition: opacity .5s ease, transform .5s ease;
   }
-  .float-name.show{opacity:1;}
+  .float-name.on{ opacity:.85; }
+  #countdown{
+    position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+    font-family:var(--ff-num); font-weight:800; font-size:64px; color:var(--text-0);
+    text-shadow:0 0 40px var(--crimson-glow);
+  }
+  #winnerReveal{ display:none; text-align:center; padding:20px 0; }
+  #winnerReveal.show{ display:block; }
+  #winnerReveal .eyebrow{ font-size:12px; letter-spacing:2px; color:var(--crimson-2); font-weight:700; margin-bottom:12px; }
+  #winnerReveal .names{ display:flex; flex-direction:column; gap:14px; }
+  #winnerReveal .wname{ font-size:clamp(28px,6vw,46px); font-weight:900; }
+  #winnerReveal .wrank{ font-size:12px; color:var(--text-2); margin-bottom:4px; }
 
-  .countdown-num{
-    position:absolute;
-    top:50%;left:50%;
-    transform:translate(-50%,-50%);
-    font-size:5rem;
-    font-weight:900;
-    color:var(--crimson-bright);
-    text-shadow:0 0 40px rgba(255,34,85,.6);
-    opacity:0;
-    transition:opacity .25s, transform .25s;
-  }
-  .countdown-num.show{opacity:1;transform:translate(-50%,-50%) scale(1);}
+  #adminControls{ display:none; margin-top:22px; padding-top:18px; border-top:1px dashed var(--glass-brd); text-align:center; gap:10px; flex-wrap:wrap; justify-content:center; }
+  #adminControls.show{ display:flex; }
 
-  .winner-reveal{
-    position:absolute;
-    inset:0;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:10px;
-    opacity:0;
-    transform:scale(.85);
-    transition:opacity .5s ease, transform .5s cubic-bezier(.34,1.56,.64,1);
-    pointer-events:none;
-  }
-  .winner-reveal.show{opacity:1;transform:scale(1);pointer-events:auto;}
-  .winner-reveal .rank{color:var(--crimson-bright);font-weight:700;font-size:1rem;letter-spacing:.05em;}
-  .winner-reveal .name{
-    font-size:2.6rem;
-    font-weight:900;
-    background:linear-gradient(90deg,#fff,var(--crimson-bright));
-    -webkit-background-clip:text;background-clip:text;color:transparent;
-  }
-  .winner-reveal .prize{color:var(--silver);font-size:.95rem;}
+  /* ---- capacity ---- */
+  #capBox{ padding:14px 18px; display:flex; align-items:center; justify-content:space-between; }
+  #capBox .lbl{ font-size:12px; color:var(--text-2); }
+  #capBox .n{ font-family:var(--ff-num); font-weight:700; font-size:16px; color:var(--text-0); }
 
-  canvas.confetti{position:fixed;inset:0;pointer-events:none;z-index:50;}
+  /* ---- names box ---- */
+  #namesBox{ padding:16px 18px; max-height:340px; display:flex; flex-direction:column; }
+  #namesBox .lbl{ font-size:11px; color:var(--text-2); letter-spacing:1px; margin-bottom:10px; text-transform:uppercase; }
+  #namesList{ overflow-y:auto; display:flex; flex-direction:column; gap:8px; }
+  #namesList .row{ display:flex; align-items:center; gap:8px; font-size:13.5px; color:var(--text-1); animation:fadeIn .4s ease; }
+  #namesList .row .id{ color:var(--crimson-2); font-family:var(--ff-num); font-size:11px; }
+  @keyframes fadeIn{ from{opacity:0; transform:translateY(-4px);} to{opacity:1; transform:translateY(0);} }
+  #namesList::-webkit-scrollbar{ width:4px; }
+  #namesList::-webkit-scrollbar-thumb{ background:var(--glass-brd-strong); border-radius:4px; }
 
-  /* ================= NAMES BOX ================= */
-  .names-box{
-    padding:20px;
-    min-height:420px;
-    max-height:520px;
-    overflow-y:auto;
-    transition:opacity .4s, transform .4s;
+  /* ================= CHAT ================= */
+  #chatDesktop{
+    position:fixed; bottom:20px; left:20px; width:300px; height:380px;
+    display:flex; flex-direction:column; overflow:hidden; z-index:40;
   }
-  .names-box h3{font-size:.95rem;color:var(--text-dim);margin-bottom:14px;font-weight:700;}
-  .names-list{display:flex;flex-direction:column;gap:8px;}
-  .names-list .item{
-    padding:9px 12px;
-    border-radius:10px;
-    background:rgba(255,255,255,.03);
-    border:1px solid var(--border);
-    font-size:.88rem;
-    color:var(--silver);
-    display:flex;
-    align-items:center;
-    gap:8px;
+  #chatDesktop .head{ padding:12px 16px; border-bottom:1px solid var(--glass-brd); font-size:13px; font-weight:700; }
+  #chatMsgs{ flex:1; overflow-y:auto; padding:10px 14px; display:flex; flex-direction:column; gap:8px; }
+  #chatMsgs::-webkit-scrollbar{ width:4px; }
+  #chatMsgs::-webkit-scrollbar-thumb{ background:var(--glass-brd-strong); border-radius:4px; }
+  .msg{ font-size:13px; line-height:1.5; }
+  .msg .sender{ font-weight:700; }
+  .msg.owner .sender{ color:#ffd76a; }
+  .msg.admin .sender{ color:var(--crimson-2); }
+  .msg.guest .sender{ color:var(--silver); }
+  #chatInputRow{ display:flex; gap:8px; padding:10px 12px; border-top:1px solid var(--glass-brd); }
+  #chatInputRow input{
+    flex:1; background:rgba(255,255,255,.04); border:1px solid var(--glass-brd); border-radius:10px;
+    padding:9px 12px; color:var(--text-0); font-size:13px; font-family:inherit; outline:none;
   }
-  .names-list .item .dot{width:6px;height:6px;border-radius:50%;background:var(--crimson);flex-shrink:0;}
-  .badge-tag{
-    color:var(--text-dim);
-    font-weight:600;
-    font-size:.82em;
-    margin-inline-end:6px;
-    font-variant-numeric:tabular-nums;
-    opacity:.85;
+  #chatInputRow input:focus{ border-color:var(--crimson-2); }
+  #chatInputRow button{
+    width:38px; height:38px; border-radius:10px; border:none; background:var(--crimson); color:#fff; font-size:15px;
   }
-  .names-empty{color:var(--text-dim);font-size:.85rem;text-align:center;padding:20px 0;}
+  #chatLocked{ padding:14px; text-align:center; font-size:12px; color:var(--text-2); }
 
-  /* ================= CHAT — desktop fixed bottom-left ================= */
-  .chat-panel{
-    position:fixed;
-    bottom:20px;
-    inset-inline-start:20px;
-    width:320px;
-    height:400px;
-    display:flex;
-    flex-direction:column;
-    z-index:40;
-    transition:opacity .4s, transform .4s;
+  #chatFab{
+    display:none; position:fixed; bottom:22px; left:22px; z-index:50;
+    width:54px; height:54px; border-radius:50%; border:none;
+    background:linear-gradient(135deg,var(--crimson),var(--crimson-2));
+    color:#fff; font-size:22px; box-shadow:0 10px 26px var(--crimson-glow);
+    align-items:center; justify-content:center;
   }
-  .chat-panel.faded{opacity:0;pointer-events:none;transform:translateY(10px);}
-  .chat-head{
-    padding:12px 16px;
-    border-bottom:1px solid var(--border);
-    font-weight:700;
-    font-size:.85rem;
-    color:var(--text-dim);
-    display:flex;justify-content:space-between;align-items:center;
+  #chatSheet{
+    display:none; position:fixed; inset:auto 0 0 0; height:75vh; z-index:60;
+    background:var(--bg-1); border-top:1px solid var(--glass-brd-strong);
+    border-radius:22px 22px 0 0; flex-direction:column; overflow:hidden;
+    box-shadow:0 -10px 40px rgba(0,0,0,.5);
   }
-  .chat-messages{
-    flex:1;
-    overflow-y:auto;
-    padding:12px 16px;
-    display:flex;
-    flex-direction:column;
-    gap:8px;
-  }
-  .chat-msg{font-size:.85rem;line-height:1.5;}
-  .chat-msg .sender{color:var(--crimson-bright);font-weight:700;}
-  .chat-msg .text{color:var(--text);word-break:break-word;}
-  .chat-input-row{
-    padding:10px 12px;
-    border-top:1px solid var(--border);
-    display:flex;
-    gap:8px;
-  }
-  .chat-input{
-    flex:1;
-    padding:9px 12px;
-    border-radius:10px;
-    background:rgba(255,255,255,.04);
-    border:1px solid var(--border);
-    color:var(--text);
-    font-size:.85rem;
-    outline:none;
-  }
-  .chat-send{
-    padding:9px 14px;
-    border-radius:10px;
-    background:var(--crimson);
-    color:#fff;
-    font-weight:700;
-    font-size:.85rem;
-  }
-  .chat-send:disabled{opacity:.4;cursor:not-allowed;}
-  .chat-hint{font-size:.72rem;color:var(--text-dim);padding:0 12px 10px;}
+  #chatSheet .sheetHead{ padding:14px 18px; display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid var(--glass-brd); }
+  #chatSheet .sheetHead button{ background:none; border:none; color:var(--text-1); font-size:20px; }
 
-  /* mobile floating chat button */
-  .chat-fab{
-    display:none;
-    position:fixed;
-    bottom:20px;
-    inset-inline-end:20px;
-    width:56px;height:56px;
-    border-radius:50%;
-    background:linear-gradient(135deg,var(--crimson),var(--crimson-bright));
-    box-shadow:0 10px 30px -8px rgba(196,18,63,.7);
-    align-items:center;justify-content:center;
-    font-size:1.4rem;
-    z-index:45;
-  }
-  .chat-sheet-backdrop{
-    display:none;
-    position:fixed;inset:0;
-    background:rgba(0,0,0,.5);
-    z-index:60;
-    opacity:0;
-    transition:opacity .3s;
-  }
-  .chat-sheet-backdrop.open{display:block;opacity:1;}
-  .chat-sheet{
-    position:fixed;
-    left:0;right:0;bottom:0;
-    height:75vh;
-    border-radius:22px 22px 0 0;
-    transform:translateY(100%);
-    transition:transform .35s cubic-bezier(.32,.72,0,1);
-    z-index:61;
-    display:flex;
-    flex-direction:column;
-  }
-  .chat-sheet.open{transform:translateY(0);}
+  /* confetti */
+  #confettiCanvas{ position:fixed; inset:0; pointer-events:none; z-index:80; }
 
-  /* ================= FOOTER credit ================= */
-  footer.credit{
-    text-align:center;
-    color:var(--text-dim);
-    font-size:.72rem;
-    padding:20px 0 0;
-    letter-spacing:.04em;
+  /* admin request modal */
+  .modalWrap{ display:none; position:fixed; inset:0; z-index:90; align-items:center; justify-content:center; padding:20px; background:rgba(0,0,0,.55); backdrop-filter:blur(4px); }
+  .modalWrap.show{ display:flex; }
+  .modalBox{ width:100%; max-width:360px; padding:26px; }
+  .modalBox h3{ font-size:16px; font-weight:700; margin-bottom:16px; }
+  .modalBox .close{ float:left; background:none; border:none; color:var(--text-2); font-size:18px; }
+
+  #adminGate{
+    position:fixed; bottom:20px; right:20px; z-index:30;
+    font-size:0; width:10px; height:10px; opacity:.15; background:transparent; border:none;
   }
+
+  footer{ text-align:center; padding:18px; font-size:11px; color:var(--text-2); }
 
   /* ================= RESPONSIVE ================= */
-  @media (max-width:820px){
-    header.top{display:none;}
-    .mobile-head{
-      display:flex;
-      flex-direction:column;
-      align-items:center;
-      gap:10px;
-      padding:22px 20px;
-    }
-    .mobile-row2{
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
-
-    .main-row{grid-template-columns:1fr;}
-    .main-row.drawing{grid-template-columns:1fr;}
-    .names-box{order:2;min-height:0;max-height:280px;}
-    .main-box{order:1;min-height:380px;}
-
-    .chat-panel{display:none;}
-    .chat-fab{display:flex;}
+  @media (max-width:860px){
+    main{ grid-template-columns:1fr; padding-bottom:120px; }
+    .desktop-only{ display:none; }
+    .mobile-only{ display:flex; }
+    header{ flex-direction:column; align-items:stretch; gap:10px; text-align:center; }
+    header .brand{ font-size:26px; text-align:center; }
+    header .side{ justify-content:center; }
+    #chatDesktop{ display:none; }
+    #chatFab{ display:flex; }
+    .col-side{ order:2; }
+    #namesBox{ order:2; }
   }
 </style>
 </head>
 <body>
 
-<canvas class="confetti" id="confettiCanvas"></canvas>
+<canvas id="confettiCanvas"></canvas>
 
-<div class="app" id="app">
-
-  <!-- ============ DESKTOP HEADER ============ -->
-  <header class="top glass">
-    <div class="head-date" id="headDate">—</div>
-    <div class="head-name"><img src="logo.png" alt="MAVRIX" class="logo-img" draggable="false" oncontextmenu="return false"></div>
-    <div class="head-right">
-      <div class="timer" id="timerDisplay">--:--:--</div>
-      <button class="lang-switch" id="langSwitchDesktop" aria-label="switch language">
-        <span class="globe">🌐</span><span class="label" id="langLabelDesktop">EN</span>
-      </button>
-    </div>
-  </header>
-
-  <!-- ============ MOBILE HEADER ============ -->
-  <div class="mobile-head glass">
-    <div class="head-name"><img src="logo.png" alt="MAVRIX" class="logo-img logo-img-mobile" draggable="false" oncontextmenu="return false"></div>
-    <div class="mobile-row2">
-      <div class="head-date" id="headDateMobile">—</div>
-      <div class="timer" id="timerDisplayMobile">--:--:--</div>
-      <button class="lang-switch" id="langSwitchMobile" aria-label="switch language">
-        <span class="globe">🌐</span><span class="label" id="langLabelMobile">EN</span>
-      </button>
-    </div>
+<header>
+  <div class="brand" id="brandWrap">
+    <img id="brandLogo" src="logo.png" alt="MAVRIX" style="height:34px; display:block;"
+         onerror="this.style.display='none'; document.getElementById('brandFallback').style.display='inline';">
+    <span id="brandFallback" style="display:none;">MAVRI<span class="x">X</span></span>
+  </div>
+  <div class="side desktop-only">
+    <span id="dateDisplay" class="val"></span>
+  </div>
+  <div class="side desktop-only">
+    <span id="timerDisplay" class="val num">--:--:--</span>
+    <button id="langBtn" data-fa="EN" data-en="PR">EN</button>
   </div>
 
-  <!-- ============ PRIZE BOX ============ -->
-  <div class="prize-box glass hidden" id="prizeBox">
-    <span class="prize-icon">🏆</span>
-    <span class="prize-text" id="prizeText"></span>
+  <div class="side mobile-only" style="justify-content:center;">
+    <span id="dateDisplayM"></span>
+    <span id="timerDisplayM" class="val num">--:--:--</span>
+    <button id="langBtnM" data-fa="EN" data-en="PR">EN</button>
   </div>
+</header>
 
-  <!-- ============ MAIN ROW ============ -->
-  <div class="main-row" id="mainRow">
+<main>
+  <div class="col-main">
+    <div id="prizeBox" class="glass">
+      <div class="label" data-fa="جوایز" data-en="PRIZES">جوایز</div>
+      <div class="items" id="prizeItems"></div>
+    </div>
 
-    <div class="main-box glass" id="mainBox">
-      <div class="capacity-pill" id="capacityPill">0/0</div>
+    <div id="mainBox" class="glass">
 
-      <!-- Stage 1: registration form -->
-      <div class="stage active" id="stageForm">
-        <h2 id="txtRegTitle">ثبت‌نام در قرعه‌کشی</h2>
-        <p class="sub" id="txtRegSub">فقط با نام خودت ثبت‌نام کن و منتظر شروع قرعه‌کشی باش.</p>
-        <form class="reg-form" id="regForm">
-          <input class="reg-input" id="nameInput" type="text" placeholder="نام شما" maxlength="40" required>
-          <button class="reg-btn" type="submit" id="regBtn">ثبت‌نام</button>
-          <div class="reg-error" id="regError"></div>
-        </form>
+      <!-- idle / entry choice -->
+      <div id="stageIdle" class="stage active">
+        <div class="cap num" id="capInline">-- / --</div>
+        <h1 data-fa="قرعه‌کشی MAVRIX" data-en="MAVRIX Raffle">قرعه‌کشی MAVRIX</h1>
+        <p data-fa="برای شرکت در قرعه‌کشی ثبت‌نام کن" data-en="Register to join the raffle">برای شرکت در قرعه‌کشی ثبت‌نام کن</p>
+        <button class="btn" id="openFormBtn" data-fa="ثبت‌نام" data-en="Register">ثبت‌نام</button>
       </div>
 
-      <!-- Stage 2: already registered -->
-      <div class="stage" id="stageRegistered">
-        <div class="reg-success">
-          <div class="check">✓</div>
-          <h2 id="txtRegisteredTitle">ثبت‌نامت انجام شد!</h2>
-          <p class="sub" id="registeredName"></p>
-          <p class="sub" id="txtWaitMsg">منتظر شروع قرعه‌کشی باش</p>
+      <!-- registration form -->
+      <div id="stageForm" class="stage">
+        <h2 data-fa="ثبت‌نام در قرعه‌کشی" data-en="Join the raffle">ثبت‌نام در قرعه‌کشی</h2>
+        <div class="field">
+          <label data-fa="نام شما" data-en="Your name">نام شما</label>
+          <input id="nameInput" maxlength="40" data-fa-ph="مثلاً علی رضایی" data-en-ph="e.g. Alex Reid" placeholder="مثلاً علی رضایی">
+        </div>
+        <div class="field">
+          <label data-fa="یک سؤال ساده" data-en="A quick check">یک سؤال ساده</label>
+          <div id="captchaRow">
+            <span class="q num" id="captchaQ">? + ? = </span>
+            <input id="captchaInput" style="max-width:80px" inputmode="numeric">
+          </div>
+        </div>
+        <button class="btn" id="submitRegBtn" style="width:100%" data-fa="تأیید ثبت‌نام" data-en="Confirm">تأیید ثبت‌نام</button>
+        <div id="formMsg"></div>
+      </div>
+
+      <!-- success -->
+      <div id="stageDone" class="stage">
+        <div class="tick">✅</div>
+        <h2 data-fa="با موفقیت ثبت‌نام شدی" data-en="You're in!">با موفقیت ثبت‌نام شدی</h2>
+        <p data-fa="منتظر شروع قرعه‌کشی بمون" data-en="Hang tight for the draw">منتظر شروع قرعه‌کشی بمون</p>
+      </div>
+
+      <!-- draw -->
+      <div id="stageDraw" class="stage">
+        <div id="shuffleField"></div>
+        <div id="winnerReveal">
+          <div class="eyebrow" data-fa="برنده" data-en="WINNER">برنده</div>
+          <div class="names" id="winnerNames"></div>
         </div>
       </div>
 
-      <!-- Stage 3: registration closed -->
-      <div class="stage" id="stageClosed">
-        <h2 id="txtClosedTitle">ثبت‌نام بسته شده</h2>
-        <p class="closed-note" id="txtClosedSub">منتظر شروع قرعه‌کشی توسط مالک باش.</p>
-      </div>
-
-      <!-- Stage 4: drawing animation -->
-      <div class="draw-stage" id="drawStage">
-        <div class="countdown-num" id="countdownNum"></div>
-        <div class="winner-reveal" id="winnerReveal">
-          <div class="rank" id="winnerRank">برنده</div>
-          <div class="name" id="winnerName"></div>
-          <div class="prize" id="winnerPrize"></div>
-        </div>
-      </div>
-
-      <!-- Stage 5: draw ended, all winners -->
-      <div class="stage" id="stageEnded">
-        <h2 id="txtEndedTitle">🎉 قرعه‌کشی به پایان رسید</h2>
-        <div id="allWinnersList" style="display:flex;flex-direction:column;gap:8px;width:100%;"></div>
+      <div id="adminControls">
+        <button class="btn small" id="startDrawBtn" data-fa="شروع قرعه‌کشی" data-en="Start the draw">شروع قرعه‌کشی</button>
+        <button class="btn small ghost" id="resetBtn" data-fa="ریست" data-en="Reset">ریست</button>
       </div>
     </div>
+  </div>
 
-    <div class="names-box glass" id="namesBox">
-      <h3 id="txtNamesTitle">ثبت‌نامی‌ها</h3>
-      <div class="names-list" id="namesList"></div>
+  <div class="col-side">
+    <div id="capBox" class="glass">
+      <span class="lbl" data-fa="ظرفیت" data-en="Capacity">ظرفیت</span>
+      <span class="n num" id="capNum">0 / 0</span>
     </div>
-
+    <div id="namesBox" class="glass">
+      <div class="lbl" data-fa="ثبت‌نامی‌های اخیر" data-en="Recent entries">ثبت‌نامی‌های اخیر</div>
+      <div id="namesList"></div>
+    </div>
   </div>
+</main>
 
-  <footer class="credit">MAVRIX © <span id="yearNow"></span></footer>
+<!-- desktop chat -->
+<div id="chatDesktop" class="glass">
+  <div class="head" data-fa="چت" data-en="Chat">چت</div>
+  <div id="chatMsgs"></div>
+  <div id="chatInputRow">
+    <input id="chatInput" data-fa-ph="پیامت..." data-en-ph="Message..." placeholder="پیامت...">
+    <button id="chatSendBtn">➤</button>
+  </div>
+  <div id="chatLocked" style="display:none;" data-fa="چت الان بسته است" data-en="Chat is closed right now">چت الان بسته است</div>
 </div>
 
-<!-- ============ CHAT: desktop fixed panel ============ -->
-<div class="chat-panel glass" id="chatPanel">
-  <div class="chat-head">
-    <span id="txtChatTitle">گفتگو</span>
-    <span id="slowModeTag" style="font-size:.7rem;"></span>
+<!-- mobile chat -->
+<button id="chatFab">💬</button>
+<div id="chatSheet">
+  <div class="sheetHead">
+    <span data-fa="چت" data-en="Chat">چت</span>
+    <button id="chatSheetClose">✕</button>
   </div>
-  <div class="chat-messages" id="chatMessages"></div>
-  <div class="chat-input-row">
-    <input class="chat-input" id="chatInput" placeholder="پیام..." maxlength="300">
-    <button class="chat-send" id="chatSend">ارسال</button>
+  <div id="chatMsgsM" style="flex:1; overflow-y:auto; padding:10px 16px; display:flex; flex-direction:column; gap:8px;"></div>
+  <div id="chatInputRowM" style="display:flex; gap:8px; padding:12px; border-top:1px solid var(--glass-brd);">
+    <input id="chatInputM" data-fa-ph="پیامت..." data-en-ph="Message..." placeholder="پیامت..." style="flex:1; background:rgba(255,255,255,.04); border:1px solid var(--glass-brd); border-radius:10px; padding:10px 12px; color:var(--text-0); font-family:inherit;">
+    <button id="chatSendBtnM" style="width:40px; border-radius:10px; border:none; background:var(--crimson); color:#fff;">➤</button>
   </div>
-  <div class="chat-hint" id="chatHint"></div>
 </div>
 
-<!-- ============ CHAT: mobile FAB + sheet ============ -->
-<button class="chat-fab" id="chatFab">💬</button>
-<div class="chat-sheet-backdrop" id="chatBackdrop"></div>
-<div class="chat-sheet glass" id="chatSheet">
-  <div class="chat-head">
-    <span id="txtChatTitleMobile">گفتگو</span>
-    <button id="chatCloseBtn" style="font-size:1.1rem;">✕</button>
+<!-- hidden admin gate -->
+<button id="adminGate" aria-hidden="true"></button>
+
+<!-- admin request modal -->
+<div class="modalWrap" id="adminModal">
+  <div class="modalBox glass">
+    <button class="close" id="adminModalClose">✕</button>
+    <h3 data-fa="درخواست دسترسی ادمین" data-en="Request admin access">درخواست دسترسی ادمین</h3>
+    <div class="field">
+      <label data-fa="نام" data-en="Name">نام</label>
+      <input id="adminNameInput">
+    </div>
+    <div class="field">
+      <label data-fa="ایمیل" data-en="Email">ایمیل</label>
+      <input id="adminEmailInput" type="email">
+    </div>
+    <button class="btn" id="adminSendLinkBtn" style="width:100%" data-fa="ارسال لینک ورود" data-en="Send sign-in link">ارسال لینک ورود</button>
+    <div id="adminModalMsg" style="font-size:12.5px; margin-top:10px; color:var(--text-1);"></div>
   </div>
-  <div class="chat-messages" id="chatMessagesMobile"></div>
-  <div class="chat-input-row">
-    <input class="chat-input" id="chatInputMobile" placeholder="پیام..." maxlength="300">
-    <button class="chat-send" id="chatSendMobile">ارسال</button>
-  </div>
-  <div class="chat-hint" id="chatHintMobile"></div>
 </div>
+
+<footer>MAVRIX — © <span id="year"></span></footer>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+/* =========================================================
+   MAVRIX — index.html
+   ⚠️ قبل از استفاده: firebaseConfig پایین رو با مقادیر واقعی
+   پروژه‌ی Firebase خودت پر کن (از Project settings > کد Web).
+   ========================================================= */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import {
-  getFirestore, collection, doc, addDoc, getDoc, getDocs, setDoc,
-  query, where, orderBy, limit, onSnapshot, serverTimestamp, Timestamp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+  getFirestore, doc, onSnapshot, collection, addDoc, updateDoc,
+  query, orderBy, limit, where, getDocs, serverTimestamp, setDoc, getDoc
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+import {
+  getAuth, onAuthStateChanged, sendSignInLinkToEmail,
+  isSignInWithEmailLink, signInWithEmailLink
+} from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
 
-/* ---------------- Firebase init ---------------- */
 const firebaseConfig = {
   apiKey: "AIzaSyDXUGqlKv-WvDUt-eB5LfZ8y_HCYlaxzXQ",
   authDomain: "mavrix-57861.firebaseapp.com",
@@ -597,592 +444,448 @@ const firebaseConfig = {
   messagingSenderId: "38679970456",
   appId: "1:38679970456:web:4cb2d44a02134d239d46ed"
 };
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const auth = getAuth(app);
 
-/* ---------------- i18n ---------------- */
-const DICT = {
-  fa: {
-    regTitle:"ثبت‌نام در قرعه‌کشی",
-    regSub:"فقط با نام خودت ثبت‌نام کن و منتظر شروع قرعه‌کشی باش.",
-    namePh:"نام شما",
-    regBtn:"ثبت‌نام",
-    registeredTitle:"ثبت‌نامت انجام شد!",
-    waitMsg:"منتظر شروع قرعه‌کشی باش",
-    closedTitle:"ثبت‌نام بسته شده",
-    closedSub:"منتظر شروع قرعه‌کشی توسط مالک باش.",
-    namesTitle:"ثبت‌نامی‌ها",
-    chatTitle:"گفتگو",
-    chatPh:"پیام...",
-    sendBtn:"ارسال",
-    endedTitle:"🎉 قرعه‌کشی به پایان رسید",
-    winnerLabel:"برنده",
-    dupName:"این نام قبلاً ثبت شده، یه نام دیگه امتحان کن.",
-    dupFP:"شما قبلاً ثبت‌نام کرده‌اید.",
-    emptyName:"لطفاً نامت رو وارد کن.",
-    invalidName:"نام فقط می‌تونه شامل حروف فارسی/انگلیسی، عدد و . - _ باشه.",
-    full:"ظرفیت تکمیل شده.",
-    closedErr:"ثبت‌نام بسته است.",
-    chatNeedsReg:"برای نوشتن پیام باید ثبت‌نام کرده باشی.",
-    chatBlocked:"دسترسی چت شما مسدود شده است.",
-    slowWait:"لطفاً ⌛ ثانیه صبر کن",
-    namesEmpty:"هنوز کسی ثبت‌نام نکرده",
-    langTarget:"EN"
-  },
-  en: {
-    regTitle:"Register for the draw",
-    regSub:"Enter just your name and wait for the draw to begin.",
-    namePh:"Your name",
-    regBtn:"Register",
-    registeredTitle:"You're registered!",
-    waitMsg:"Wait for the draw to start",
-    closedTitle:"Registration closed",
-    closedSub:"Waiting for the owner to start the draw.",
-    namesTitle:"Registrants",
-    chatTitle:"Chat",
-    chatPh:"Message...",
-    sendBtn:"Send",
-    endedTitle:"🎉 The draw has ended",
-    winnerLabel:"Winner",
-    dupName:"That name is already taken, try another.",
-    dupFP:"You have already registered.",
-    emptyName:"Please enter your name.",
-    invalidName:"Name can only contain Persian/English letters, digits, and . - _",
-    full:"Capacity is full.",
-    closedErr:"Registration is closed.",
-    chatNeedsReg:"You must register to send messages.",
-    chatBlocked:"Your chat access is blocked.",
-    slowWait:"Please wait ⌛s",
-    namesEmpty:"No one has registered yet",
-    langTarget:"PR"
-  }
-};
+/* ---------------- language ---------------- */
 let lang = localStorage.getItem('mavrix_lang') || 'fa';
-
 function applyLang(){
-  const d = DICT[lang];
   document.documentElement.lang = lang;
   document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
-  document.getElementById('txtRegTitle').textContent = d.regTitle;
-  document.getElementById('txtRegSub').textContent = d.regSub;
-  document.getElementById('nameInput').placeholder = d.namePh;
-  document.getElementById('regBtn').textContent = d.regBtn;
-  document.getElementById('txtRegisteredTitle').textContent = d.registeredTitle;
-  document.getElementById('txtWaitMsg').textContent = d.waitMsg;
-  document.getElementById('txtClosedTitle').textContent = d.closedTitle;
-  document.getElementById('txtClosedSub').textContent = d.closedSub;
-  document.getElementById('txtNamesTitle').textContent = d.namesTitle;
-  document.getElementById('txtChatTitle').textContent = d.chatTitle;
-  document.getElementById('txtChatTitleMobile').textContent = d.chatTitle;
-  document.getElementById('chatInput').placeholder = d.chatPh;
-  document.getElementById('chatInputMobile').placeholder = d.chatPh;
-  document.getElementById('chatSend').textContent = d.sendBtn;
-  document.getElementById('chatSendMobile').textContent = d.sendBtn;
-  document.getElementById('txtEndedTitle').textContent = d.endedTitle;
-  document.getElementById('langLabelDesktop').textContent = d.langTarget;
-  document.getElementById('langLabelMobile').textContent = d.langTarget;
-  renderNamesList();
+  document.documentElement.dataset.lang = lang;
+  document.querySelectorAll('[data-fa]').forEach(el=>{
+    const val = el.dataset[lang] ?? el.dataset.fa;
+    if(el.tagName === 'INPUT'){ /* placeholders handled separately */ }
+    else el.textContent = val;
+  });
+  document.querySelectorAll('[data-fa-ph]').forEach(el=>{
+    el.placeholder = lang === 'fa' ? el.dataset.faPh : el.dataset.enPh;
+  });
+  const btnLbl = lang === 'fa' ? 'EN' : 'PR';
+  document.getElementById('langBtn').textContent = btnLbl;
+  document.getElementById('langBtnM').textContent = btnLbl;
 }
 function toggleLang(){
   lang = lang === 'fa' ? 'en' : 'fa';
   localStorage.setItem('mavrix_lang', lang);
   applyLang();
 }
-document.getElementById('langSwitchDesktop').addEventListener('click', toggleLang);
-document.getElementById('langSwitchMobile').addEventListener('click', toggleLang);
+document.getElementById('langBtn').addEventListener('click', toggleLang);
+document.getElementById('langBtnM').addEventListener('click', toggleLang);
+applyLang();
+document.getElementById('year').textContent = new Date().getFullYear();
 
-/* ---------------- fingerprint (lightweight, no external lib) ---------------- */
+/* ---------------- date / clock (Tehran) ---------------- */
+function tickClock(){
+  const now = new Date();
+  const dateStr = new Intl.DateTimeFormat(lang === 'fa' ? 'fa-IR' : 'en-US', {
+    timeZone:'Asia/Tehran', weekday:'short', day:'numeric', month:'short'
+  }).format(now);
+  const timeStr = new Intl.DateTimeFormat('en-GB', {
+    timeZone:'Asia/Tehran', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false
+  }).format(now);
+  document.getElementById('dateDisplay').textContent = dateStr;
+  document.getElementById('dateDisplayM').textContent = dateStr;
+  updateCountdown(timeStr);
+}
+let regDeadline = null; // Date, from settings.timerEndsAt
+function updateCountdown(nowTimeStr){
+  let text = nowTimeStr;
+  if(regDeadline){
+    const diff = regDeadline.getTime() - Date.now();
+    if(diff > 0){
+      const h = String(Math.floor(diff/3600000)).padStart(2,'0');
+      const m = String(Math.floor((diff%3600000)/60000)).padStart(2,'0');
+      const s = String(Math.floor((diff%60000)/1000)).padStart(2,'0');
+      text = `${h}:${m}:${s}`;
+    } else {
+      text = lang==='fa' ? 'به پایان رسید' : 'Ended';
+    }
+  }
+  document.getElementById('timerDisplay').textContent = text;
+  document.getElementById('timerDisplayM').textContent = text;
+}
+setInterval(tickClock, 1000);
+tickClock();
+
+/* ---------------- fingerprint ---------------- */
 function getFingerprint(){
   let fp = localStorage.getItem('mavrix_fp');
   if(fp) return fp;
   try{
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    ctx.textBaseline = 'top';
-    ctx.font = "14px 'Vazirmatn'";
-    ctx.fillText('mavrix-fp-🔥', 2, 2);
+    const c = document.createElement('canvas');
+    const ctx = c.getContext('2d');
+    ctx.textBaseline = 'top'; ctx.font = '14px Arial';
+    ctx.fillText('mavrix-fp-🎯', 2, 2);
     const raw = [
       navigator.userAgent, navigator.language, screen.width, screen.height,
-      screen.colorDepth, new Date().getTimezoneOffset(), canvas.toDataURL()
-    ].join('###');
+      screen.colorDepth, new Date().getTimezoneOffset(), c.toDataURL()
+    ].join('|');
     let hash = 0;
-    for(let i=0;i<raw.length;i++){ hash = (hash*31 + raw.charCodeAt(i)) | 0; }
-    fp = 'fp_' + Math.abs(hash).toString(36) + '_' + Math.random().toString(36).slice(2,8);
-  }catch(e){
-    fp = 'fp_' + Math.random().toString(36).slice(2,10);
-  }
+    for(let i=0;i<raw.length;i++){ hash = (hash*31 + raw.charCodeAt(i)) >>> 0; }
+    fp = 'fp_' + hash.toString(36) + '_' + Math.random().toString(36).slice(2,8);
+  }catch(e){ fp = 'fp_' + Math.random().toString(36).slice(2,12); }
   localStorage.setItem('mavrix_fp', fp);
   return fp;
-}
-const myFingerprint = getFingerprint();
-let myRegisteredName = localStorage.getItem('mavrix_myname') || null;
-let myRegisteredBadge = localStorage.getItem('mavrix_mybadge') || null;
-
-/* ---------------- state ---------------- */
-let settings = {};
-let registrants = [];
-let unsubSettings = null, unsubRegistrants = null, unsubChat = null;
-
-document.getElementById('yearNow').textContent = new Date().getFullYear();
-
-/* ---------------- date + timer ---------------- */
-function updateDateDisplay(){
-  const now = new Date();
-  const fmt = lang === 'fa'
-    ? new Intl.DateTimeFormat('fa-IR',{year:'numeric',month:'long',day:'numeric'}).format(now)
-    : new Intl.DateTimeFormat('en-US',{year:'numeric',month:'short',day:'numeric'}).format(now);
-  document.getElementById('headDate').textContent = fmt;
-  document.getElementById('headDateMobile').textContent = fmt;
-}
-updateDateDisplay();
-setInterval(updateDateDisplay, 60000);
-
-function tickTimer(){
-  const el1 = document.getElementById('timerDisplay');
-  const el2 = document.getElementById('timerDisplayMobile');
-  if(!settings.timerEndsAt){ el1.textContent='--:--:--'; el2.textContent='--:--:--'; return; }
-  const end = settings.timerEndsAt.toDate ? settings.timerEndsAt.toDate() : new Date(settings.timerEndsAt);
-  const diff = end - new Date();
-  if(diff <= 0){
-    el1.textContent = '00:00:00'; el2.textContent='00:00:00';
-    el1.classList.add('urgent'); el2.classList.add('urgent');
-    maybeAutoCloseRegistration();
-    return;
-  }
-  const h = Math.floor(diff/3600000), m = Math.floor((diff%3600000)/60000), s = Math.floor((diff%60000)/1000);
-  const str = [h,m,s].map(v=>String(v).padStart(2,'0')).join(':');
-  el1.textContent = str; el2.textContent = str;
-  if(diff < 60000){ el1.classList.add('urgent'); el2.classList.add('urgent'); }
-  else { el1.classList.remove('urgent'); el2.classList.remove('urgent'); }
-}
-setInterval(tickTimer, 1000);
-
-let autoCloseAttempted = false;
-async function maybeAutoCloseRegistration(){
-  if(autoCloseAttempted) return;
-  if(settings.registrationOpen && !settings.drawStarted){
-    autoCloseAttempted = true;
-    try{
-      await setDoc(doc(db,'settings','main'), { registrationOpen:false }, { merge:true });
-    }catch(e){ /* rules likely block public write; owner dashboard will close it */ }
-  }
-}
-
-/* ---------------- settings listener ---------------- */
-unsubSettings = onSnapshot(doc(db,'settings','main'), (snap)=>{
-  if(!snap.exists()) return;
-  settings = snap.data();
-  renderCapacity();
-  renderPrize();
-  renderStage();
-});
-
-/* ---------------- registrants listener ---------------- */
-unsubRegistrants = onSnapshot(collection(db,'registrants'), (snap)=>{
-  registrants = [];
-  snap.forEach(d=> registrants.push({id:d.id, ...d.data()}));
-  renderCapacity();
-  renderNamesList();
-  checkIfBlocked();
-});
-
-function renderCapacity(){
-  const cap = settings.capacity ?? 0;
-  document.getElementById('capacityPill').textContent = `${registrants.length}/${cap}`;
-}
-
-function renderPrize(){
-  const box = document.getElementById('prizeBox');
-  if(settings.showPrizesBeforeDraw && settings.prizes && settings.prizes.length){
-    box.classList.remove('hidden');
-    const txt = settings.prizes.map(p=>`<b>${p.rank}</b>: ${p.text}`).join(' &nbsp;•&nbsp; ');
-    document.getElementById('prizeText').innerHTML = txt;
-  } else {
-    box.classList.add('hidden');
-  }
-}
-
-function renderNamesList(){
-  const list = document.getElementById('namesList');
-  if(!registrants.length){
-    list.innerHTML = `<div class="names-empty">${DICT[lang].namesEmpty}</div>`;
-    return;
-  }
-  list.innerHTML = registrants
-    .filter(r=>!r.blocked)
-    .map(r=>`<div class="item"><span class="dot"></span>${badgeHtml(r)}</div>`)
-    .join('');
-}
-
-function escapeHtml(s){
-  return String(s ?? '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-function fmtBadge(b){
-  return '#' + String(b).padStart(3,'0');
-}
-function displayName(r){
-  return `${fmtBadge(r.badge)} ${r.name}`;
-}
-function badgeHtml(r){
-  return `<span class="badge-tag">${fmtBadge(r.badge)}</span>${escapeHtml(r.name)}`;
-}
-function generateUniqueBadge(){
-  const used = new Set(registrants.map(r=>r.badge).filter(b=>b!=null));
-  let tries = 0;
-  let badge;
-  do{
-    badge = Math.floor(Math.random()*999)+1;
-    tries++;
-  } while(used.has(badge) && tries < 500);
-  return badge;
 }
 
 /* ---------------- stage switching ---------------- */
 function showStage(id){
   document.querySelectorAll('.stage').forEach(s=>s.classList.remove('active'));
-  const el = document.getElementById(id);
-  if(el) el.classList.add('active');
+  document.getElementById(id).classList.add('active');
 }
-
-let lastDrawStarted = false;
-function renderStage(){
-  const mainRow = document.getElementById('mainRow');
-  const drawStage = document.getElementById('drawStage');
-
-  if(settings.drawStarted && !settings.drawEnded){
-    mainRow.classList.add('drawing');
-    document.getElementById('chatPanel').classList.add('faded');
-    document.querySelectorAll('.stage').forEach(s=>s.classList.remove('active'));
-    drawStage.classList.add('active');
-    if(!lastDrawStarted){ startDrawAnimation(); }
-    lastDrawStarted = true;
-    return;
-  }
-  lastDrawStarted = false;
-  mainRow.classList.remove('drawing');
-  document.getElementById('chatPanel').classList.remove('faded');
-  drawStage.classList.remove('active');
-
-  if(settings.drawEnded){
-    renderEndedStage();
-    showStage('stageEnded');
-    return;
-  }
-
-  const already = myRegisteredName && registrants.some(r=>r.fingerprint===myFingerprint);
-  if(already){
-    const mine = registrants.find(r=>r.fingerprint===myFingerprint);
-    document.getElementById('registeredName').innerHTML = mine ? badgeHtml(mine) : escapeHtml(myRegisteredName);
-    showStage('stageRegistered');
-  } else if(!settings.registrationOpen){
-    showStage('stageClosed');
-  } else {
-    showStage('stageForm');
-  }
-}
-
-function renderEndedStage(){
-  const el = document.getElementById('allWinnersList');
-  if(!settings.winners || !settings.winners.length){ el.innerHTML=''; return; }
-  el.innerHTML = settings.winners.map(w=>`
-    <div class="item" style="justify-content:space-between;">
-      <span>${DICT[lang].winnerLabel} ${escapeHtml(w.rank)}</span>
-      <b>${escapeHtml(w.name)}</b>
-    </div>`).join('');
-}
-
-/* ---------------- registration form ---------------- */
-document.getElementById('regForm').addEventListener('submit', async (e)=>{
-  e.preventDefault();
-  const d = DICT[lang];
-  const btn = document.getElementById('regBtn');
-  const errEl = document.getElementById('regError');
-  errEl.textContent = '';
-  const name = document.getElementById('nameInput').value.trim();
-  if(!name){ errEl.textContent = d.emptyName; return; }
-  const validNamePattern = /^[a-zA-Z0-9\u0600-\u06FF\s._-]+$/;
-  if(!validNamePattern.test(name)){ errEl.textContent = d.invalidName; return; }
-  if(!settings.registrationOpen){ errEl.textContent = d.closedErr; return; }
-  if(settings.capacity && registrants.length >= settings.capacity){ errEl.textContent = d.full; return; }
-  if(registrants.some(r=>r.fingerprint === myFingerprint)){ errEl.textContent = d.dupFP; return; }
-  if(registrants.some(r=>r.name.toLowerCase() === name.toLowerCase())){ errEl.textContent = d.dupName; return; }
-
-  btn.disabled = true;
-  try{
-    const badge = generateUniqueBadge();
-    await addDoc(collection(db,'registrants'), {
-      name, badge, fingerprint: myFingerprint, registeredAt: serverTimestamp(), blocked:false
-    });
-    myRegisteredName = name;
-    myRegisteredBadge = badge;
-    localStorage.setItem('mavrix_myname', name);
-    localStorage.setItem('mavrix_mybadge', String(badge));
-  }catch(err){
-    errEl.textContent = (lang==='fa' ? 'خطا در ثبت‌نام، دوباره تلاش کن.' : 'Registration failed, try again.');
-  }
-  btn.disabled = false;
+document.getElementById('openFormBtn').addEventListener('click', ()=>{
+  newCaptcha();
+  showStage('stageForm');
 });
 
-function checkIfBlocked(){
-  const mine = registrants.find(r=>r.fingerprint===myFingerprint);
-  if(mine && mine.blocked){
-    // blocked users are treated as not registered for chat purposes; form stays hidden since registrant doc exists
-  }
+/* ---------------- captcha ---------------- */
+let captchaAnswer = 0, formOpenedAt = 0;
+function newCaptcha(){
+  const a = Math.floor(Math.random()*8)+1, b = Math.floor(Math.random()*8)+1;
+  captchaAnswer = a+b;
+  document.getElementById('captchaQ').textContent = `${a} + ${b} = `;
+  document.getElementById('captchaInput').value = '';
+  formOpenedAt = Date.now();
 }
 
-/* ---------------- draw animation ---------------- */
-let drawAnimHandle = null;
-function startDrawAnimation(){
-  const stage = document.getElementById('drawStage');
-  document.querySelectorAll('.float-name').forEach(n=>n.remove());
-  document.getElementById('countdownNum').classList.remove('show');
-  document.getElementById('winnerReveal').classList.remove('show');
+/* ---------------- settings listener ---------------- */
+let settings = {};
+let myRegistrantId = localStorage.getItem('mavrix_reg_id') || null;
+let myRegistrantName = localStorage.getItem('mavrix_reg_name') || null;
 
-  const names = registrants.filter(r=>!r.blocked);
-  if(!names.length) return;
-
-  const slow = names.length <= 10;
-  const interval = slow ? 700 : 350;
-  let queue = shuffle([...names]);
-  let qi = 0;
-
-  clearInterval(drawAnimHandle);
-  drawAnimHandle = setInterval(()=>{
-    if(settings.drawEnded){ clearInterval(drawAnimHandle); return; }
-    if(qi >= queue.length){ queue = shuffle([...names]); qi = 0; }
-    const nm = queue[qi++];
-    spawnFloatName(nm, stage);
-  }, interval);
-}
-
-function shuffle(arr){
-  for(let i=arr.length-1;i>0;i--){
-    const j = Math.floor(Math.random()*(i+1));
-    [arr[i],arr[j]]=[arr[j],arr[i]];
-  }
-  return arr;
-}
-
-function spawnFloatName(registrant, stage){
-  const el = document.createElement('div');
-  el.className = 'float-name';
-  el.innerHTML = badgeHtml(registrant);
-  const w = stage.clientWidth || 400, h = stage.clientHeight || 400;
-  const x = Math.random()*(w-120)+10;
-  const y = Math.random()*(h-40)+10;
-  el.style.left = x+'px';
-  el.style.top = y+'px';
-  stage.appendChild(el);
-  requestAnimationFrame(()=> el.classList.add('show'));
-  setTimeout(()=>{
-    el.classList.remove('show');
-    setTimeout(()=> el.remove(), 500);
-  }, 1200);
-}
-
-/* watch for winners appearing (owner triggers via dashboard: sets settings.winners + drawEnded) */
-let winnerRevealShown = false;
-const origRenderStage = renderStage;
-</script>
-
-<!-- second module: chat + sounds + mobile sheet + winner reveal trigger -->
-<script type="module">
-import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-  getFirestore, collection, addDoc, doc, onSnapshot, query, orderBy, limit, serverTimestamp
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-const app = getApps()[0];
-const db = getFirestore(app);
-const myFingerprint = localStorage.getItem('mavrix_fp');
-
-/* ---------------- sounds (Web Audio API, synthetic) ---------------- */
-let audioCtx;
-function ac(){ if(!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)(); return audioCtx; }
-function beep(freq=440, dur=0.15, type='sine', gain=0.15, delay=0){
-  try{
-    const ctx = ac();
-    const osc = ctx.createOscillator();
-    const g = ctx.createGain();
-    osc.type = type; osc.frequency.value = freq;
-    g.gain.value = gain;
-    osc.connect(g); g.connect(ctx.destination);
-    const t = ctx.currentTime + delay;
-    osc.start(t);
-    g.gain.setValueAtTime(gain, t);
-    g.gain.exponentialRampToValueAtTime(0.001, t+dur);
-    osc.stop(t+dur+0.02);
-  }catch(e){}
-}
-function playCountdownBeep(){ beep(520, 0.12, 'square', 0.12); }
-function playWinnerFanfare(){
-  [523.25,659.25,783.99,1046.5].forEach((f,i)=> beep(f, 0.35, 'triangle', 0.14, i*0.09));
-}
-
-/* ---------------- confetti ---------------- */
-const confettiCanvas = document.getElementById('confettiCanvas');
-const cctx = confettiCanvas.getContext('2d');
-function resizeConfetti(){ confettiCanvas.width = innerWidth; confettiCanvas.height = innerHeight; }
-resizeConfetti();
-window.addEventListener('resize', resizeConfetti);
-let confettiParticles = [];
-function launchConfetti(){
-  confettiParticles = [];
-  const colors = ['#c4123f','#ff2255','#c0c0c8','#ffffff','#7d8391'];
-  for(let i=0;i<160;i++){
-    confettiParticles.push({
-      x: innerWidth/2, y: innerHeight/2,
-      vx:(Math.random()-0.5)*14, vy:(Math.random()-1.6)*14,
-      size:4+Math.random()*5, color:colors[Math.floor(Math.random()*colors.length)],
-      rot:Math.random()*360, vr:(Math.random()-0.5)*12, life:100
-    });
-  }
-  requestAnimationFrame(animateConfetti);
-}
-function animateConfetti(){
-  cctx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
-  let alive = false;
-  confettiParticles.forEach(p=>{
-    if(p.life<=0) return;
-    alive = true;
-    p.vy += 0.28; p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.life -= 1.4;
-    cctx.save();
-    cctx.translate(p.x,p.y);
-    cctx.rotate(p.rot*Math.PI/180);
-    cctx.fillStyle = p.color;
-    cctx.globalAlpha = Math.max(p.life/100, 0);
-    cctx.fillRect(-p.size/2,-p.size/2,p.size,p.size*0.6);
-    cctx.restore();
-  });
-  if(alive) requestAnimationFrame(animateConfetti);
-  else cctx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
-}
-
-/* ---------------- winner reveal watcher ---------------- */
-let prevSettingsSnapshot = null;
 onSnapshot(doc(db,'settings','main'), (snap)=>{
-  if(!snap.exists()) return;
-  const s = snap.data();
-  const stage = document.getElementById('drawStage');
-  const countdownEl = document.getElementById('countdownNum');
-  const revealEl = document.getElementById('winnerReveal');
+  settings = snap.data() || {};
+  regDeadline = settings.timerEndsAt ? settings.timerEndsAt.toDate() : null;
 
-  if(s.drawEnded && prevSettingsSnapshot && !prevSettingsSnapshot.drawEnded){
-    // transition: play countdown then reveal
-    runCountdownThenReveal(s);
-  } else if(s.drawEnded && !prevSettingsSnapshot){
-    // page loaded after draw already ended: show final state directly without animation
+  // prizes
+  const prizeBox = document.getElementById('prizeBox');
+  const prizes = settings.prizes || [];
+  if(prizes.length && settings.showPrizesBeforeDraw !== false){
+    prizeBox.classList.add('show');
+    document.getElementById('prizeItems').innerHTML = prizes.map(p=>
+      `<div><span class="rank">#${p.rank}</span> — ${p.text}</div>`).join('');
+  } else {
+    prizeBox.classList.remove('show');
   }
-  prevSettingsSnapshot = s;
+
+  // stage routing
+  if(settings.drawStarted && !window.__drawAnimationStarted){
+    window.__drawAnimationStarted = true;
+    showStage('stageDraw');
+    runDrawAnimation(settings.winners || []);
+  } else if(!settings.drawStarted){
+    if(myRegistrantId){ showStage('stageDone'); }
+  }
+
+  // chat lock state
+  const chatClosed = settings.drawStarted && !isAdminUser;
+  document.getElementById('chatLocked').style.display = chatClosed ? 'block' : 'none';
+  document.getElementById('chatInputRow').style.display = chatClosed ? 'none' : 'flex';
+
+  // admin controls visibility
+  document.getElementById('startDrawBtn').disabled = !!settings.drawStarted;
 });
 
-function runCountdownThenReveal(s){
-  const countdownEl = document.getElementById('countdownNum');
-  const revealEl = document.getElementById('winnerReveal');
-  let n = 3;
-  countdownEl.textContent = n;
-  countdownEl.classList.add('show');
-  playCountdownBeep();
-  const iv = setInterval(()=>{
-    n -= 1;
-    if(n>0){
-      countdownEl.textContent = n;
-      countdownEl.classList.remove('show');
-      void countdownEl.offsetWidth;
-      countdownEl.classList.add('show');
-      playCountdownBeep();
-    } else {
-      clearInterval(iv);
-      countdownEl.classList.remove('show');
-      const winners = s.winners || [];
-      const w = winners[0];
-      if(w){
-        document.getElementById('winnerName').textContent = w.name;
-        document.getElementById('winnerPrize').textContent = w.text || '';
-      }
-      revealEl.classList.add('show');
-      playWinnerFanfare();
-      launchConfetti();
+/* ---------------- capacity + names list ---------------- */
+onSnapshot(collection(db,'registrants'), (snap)=>{
+  let count = 0;
+  const rows = [];
+  snap.forEach(d=>{
+    const v = d.data();
+    if(v.blocked) return;
+    count++;
+    rows.push({ id:d.id, name:v.name, t: v.registeredAt?.toMillis?.() || 0 });
+  });
+  rows.sort((a,b)=>b.t-a.t);
+  const cap = settings.capacity || 0;
+  document.getElementById('capNum').textContent = `${count} / ${cap || '∞'}`;
+  document.getElementById('capInline').textContent = `${count} / ${cap || '∞'}`;
+  document.getElementById('namesList').innerHTML = rows.slice(0,60).map(r=>
+    `<div class="row"><span class="id num">#${r.id.slice(0,4)}</span><span>${escapeHtml(r.name)}</span></div>`
+  ).join('');
+});
+
+/* ---------------- registration submit ---------------- */
+document.getElementById('submitRegBtn').addEventListener('click', async ()=>{
+  const msgEl = document.getElementById('formMsg');
+  msgEl.className = ''; msgEl.textContent = '';
+  const name = document.getElementById('nameInput').value.trim();
+  const captchaVal = Number(document.getElementById('captchaInput').value);
+
+  if(!name || name.length > 40){
+    msgEl.textContent = lang==='fa' ? 'یه نام معتبر وارد کن' : 'Enter a valid name';
+    msgEl.className = 'err'; return;
+  }
+  if(captchaVal !== captchaAnswer){
+    msgEl.textContent = lang==='fa' ? 'جواب سؤال درست نیست' : 'That answer is wrong';
+    msgEl.className = 'err'; return;
+  }
+  if(Date.now() - formOpenedAt < 1500){
+    msgEl.textContent = lang==='fa' ? 'یه لحظه صبر کن و دوباره امتحان کن' : 'Please wait a moment and try again';
+    msgEl.className = 'err'; return;
+  }
+  if(settings.registrationOpen === false){
+    msgEl.textContent = lang==='fa' ? 'ثبت‌نام بسته است' : 'Registration is closed';
+    msgEl.className = 'err'; return;
+  }
+
+  const fingerprint = getFingerprint();
+  try{
+    // duplicate name check
+    const nameQ = query(collection(db,'registrants'), where('name','==', name));
+    const nameSnap = await getDocs(nameQ);
+    if(!nameSnap.empty){
+      msgEl.textContent = lang==='fa' ? 'این نام قبلاً ثبت شده، یه نام دیگه انتخاب کن' : 'That name is taken — try another';
+      msgEl.className = 'err'; return;
     }
-  }, 900);
+    // duplicate fingerprint check
+    const fpQ = query(collection(db,'registrants'), where('fingerprint','==', fingerprint));
+    const fpSnap = await getDocs(fpQ);
+    if(!fpSnap.empty){
+      msgEl.textContent = lang==='fa' ? 'قبلاً از این دستگاه ثبت‌نام شده' : 'This device already registered';
+      msgEl.className = 'err'; return;
+    }
+
+    const docRef = await addDoc(collection(db,'registrants'), {
+      name, fingerprint, registeredAt: serverTimestamp(), blocked:false
+    });
+    myRegistrantId = docRef.id; myRegistrantName = name;
+    localStorage.setItem('mavrix_reg_id', myRegistrantId);
+    localStorage.setItem('mavrix_reg_name', myRegistrantName);
+    showStage('stageDone');
+  }catch(e){
+    console.error(e);
+    msgEl.textContent = lang==='fa' ? 'خطایی پیش اومد، دوباره امتحان کن' : 'Something went wrong, try again';
+    msgEl.className = 'err';
+  }
+});
+
+function escapeHtml(s){
+  return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 /* ---------------- chat ---------------- */
-let registrantsCache = [];
-onSnapshot(collection(db,'registrants'), (snap)=>{
-  registrantsCache = [];
-  snap.forEach(d=> registrantsCache.push({id:d.id, ...d.data()}));
-});
-
-let lastMsgTime = parseInt(localStorage.getItem('mavrix_last_msg')||'0', 10);
-
-function renderChatMessages(msgs){
-  const html = msgs.map(m=>{
-    const badgeSpan = (m.senderBadge!=null) ? `<span class="badge-tag">#${String(m.senderBadge).padStart(3,'0')}</span>` : '';
-    return `<div class="chat-msg">${badgeSpan}<span class="sender">${escHtml(m.senderName)}:</span> <span class="text">${escHtml(m.text)}</span></div>`;
-  }).join('');
-  const c1 = document.getElementById('chatMessages');
-  const c2 = document.getElementById('chatMessagesMobile');
-  c1.innerHTML = html; c1.scrollTop = c1.scrollHeight;
-  c2.innerHTML = html; c2.scrollTop = c2.scrollHeight;
+function renderMsg(v){
+  const cls = v.senderType === 'owner' ? 'owner' : v.senderType === 'admin' ? 'admin' : 'guest';
+  const icon = v.senderType === 'owner' ? '👑 ' : v.senderType === 'admin' ? '🛡️ ' : '';
+  const idTag = v.senderType === 'guest' ? `#${(v.senderId||'').slice(0,4)} ` : '';
+  return `<div class="msg ${cls}"><span class="sender">${icon}${idTag}${escapeHtml(v.senderName||'')}</span>: ${escapeHtml(v.text||'')}</div>`;
 }
-function escHtml(s){
-  return String(s ?? '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-}
-
-const chatQ = query(collection(db,'chat'), orderBy('sentAt','asc'), limit(200));
+const chatQ = query(collection(db,'chat'), orderBy('createdAt','desc'), limit(80));
 onSnapshot(chatQ, (snap)=>{
-  const msgs = [];
-  snap.forEach(d=> msgs.push(d.data()));
-  renderChatMessages(msgs);
+  const items = [];
+  snap.forEach(d=>items.push(d.data()));
+  items.reverse();
+  const html = items.map(renderMsg).join('');
+  const a = document.getElementById('chatMsgs'), b = document.getElementById('chatMsgsM');
+  a.innerHTML = html; a.scrollTop = a.scrollHeight;
+  b.innerHTML = html; b.scrollTop = b.scrollHeight;
 });
 
-async function sendChat(inputEl, hintEl){
+async function sendChat(inputEl){
   const text = inputEl.value.trim();
   if(!text) return;
-  const mine = registrantsCache.find(r=>r.fingerprint===myFingerprint);
-  if(!mine){ hintEl.textContent = (document.documentElement.lang==='fa' ? 'برای نوشتن پیام باید ثبت‌نام کرده باشی.' : 'You must register to send messages.'); return; }
-  if(mine.blocked){ hintEl.textContent = (document.documentElement.lang==='fa' ? 'دسترسی چت شما مسدود شده است.' : 'Your chat access is blocked.'); return; }
-
-  const settingsSnap = await new Promise((resolve)=>{
-    const unsub = onSnapshot(doc(db,'settings','main'), (s)=>{ unsub(); resolve(s.data()||{}); });
-  });
-  const slowSec = settingsSnap.slowModeSeconds || 0;
-  const now = Date.now();
-  if(slowSec > 0 && (now - lastMsgTime) < slowSec*1000){
-    const wait = Math.ceil((slowSec*1000 - (now-lastMsgTime))/1000);
-    hintEl.textContent = (document.documentElement.lang==='fa' ? `لطفاً ${wait} ثانیه صبر کن` : `Please wait ${wait}s`);
-    return;
-  }
-
+  let senderType='guest', senderName=myRegistrantName, senderId=myRegistrantId;
+  if(isAdminUser){ senderType = isOwnerUser ? 'owner' : 'admin'; senderName = adminName || 'Admin'; senderId = auth.currentUser?.uid || ''; }
+  if(senderType==='guest' && !myRegistrantId){ return; }
+  inputEl.value = '';
   try{
-    await addDoc(collection(db,'chat'), {
-      senderName: mine.name, senderBadge: mine.badge, fingerprint: myFingerprint, text: text.slice(0,300), sentAt: serverTimestamp()
-    });
-    inputEl.value = '';
-    hintEl.textContent = '';
-    lastMsgTime = now;
-    localStorage.setItem('mavrix_last_msg', String(now));
-  }catch(e){
-    hintEl.textContent = (document.documentElement.lang==='fa' ? 'ارسال پیام ناموفق بود.' : 'Failed to send message.');
+    await addDoc(collection(db,'chat'), { text, senderName, senderType, senderId, createdAt: serverTimestamp() });
+  }catch(e){ console.error(e); }
+}
+document.getElementById('chatSendBtn').addEventListener('click', ()=>sendChat(document.getElementById('chatInput')));
+document.getElementById('chatInput').addEventListener('keydown', e=>{ if(e.key==='Enter') sendChat(e.target); });
+document.getElementById('chatSendBtnM').addEventListener('click', ()=>sendChat(document.getElementById('chatInputM')));
+document.getElementById('chatInputM').addEventListener('keydown', e=>{ if(e.key==='Enter') sendChat(e.target); });
+
+document.getElementById('chatFab').addEventListener('click', ()=>{ document.getElementById('chatSheet').style.display='flex'; });
+document.getElementById('chatSheetClose').addEventListener('click', ()=>{ document.getElementById('chatSheet').style.display='none'; });
+
+/* ---------------- draw animation ---------------- */
+async function runDrawAnimation(winners){
+  const field = document.getElementById('shuffleField');
+  field.innerHTML = '';
+  const snap = await getDocs(collection(db,'registrants'));
+  const names = [];
+  snap.forEach(d=>{ if(!d.data().blocked) names.push(d.data().name); });
+  const slow = names.length <= 12;
+  const positions = [];
+  function randPos(){
+    return { top: Math.random()*80+'%', left: Math.random()*80+'%' };
+  }
+  let i = 0;
+  const interval = setInterval(()=>{
+    if(names.length === 0){ clearInterval(interval); startCountdown(); return; }
+    const el = document.createElement('div');
+    el.className = 'float-name num';
+    el.textContent = names[i % names.length];
+    const p = randPos();
+    el.style.top = p.top; el.style.left = p.left;
+    field.appendChild(el);
+    requestAnimationFrame(()=>el.classList.add('on'));
+    setTimeout(()=>{ el.classList.remove('on'); setTimeout(()=>el.remove(),500); }, slow ? 1400 : 700);
+    i++;
+    if(i >= names.length * 2){ clearInterval(interval); startCountdown(); }
+  }, slow ? 550 : 260);
+
+  function startCountdown(){
+    const cd = document.createElement('div');
+    cd.id = 'countdown';
+    field.appendChild(cd);
+    let n = 3;
+    cd.textContent = n;
+    const cdInt = setInterval(()=>{
+      n--;
+      if(n<=0){ clearInterval(cdInt); cd.remove(); revealWinners(winners); return; }
+      cd.textContent = n;
+    }, 900);
   }
 }
+function revealWinners(winners){
+  document.getElementById('winnerReveal').classList.add('show');
+  const el = document.getElementById('winnerNames');
+  if(!winners.length){
+    el.innerHTML = `<div class="wname">—</div>`;
+  } else {
+    el.innerHTML = winners.map(w=>
+      `<div><div class="wrank">${lang==='fa'?'رتبه':'RANK'} ${w.rank ?? ''}</div><div class="wname">${escapeHtml(w.name)}</div></div>`
+    ).join('');
+  }
+  fireConfetti();
+  playWinSound();
+}
 
-document.getElementById('chatSend').addEventListener('click', ()=> sendChat(document.getElementById('chatInput'), document.getElementById('chatHint')));
-document.getElementById('chatInput').addEventListener('keydown', (e)=>{ if(e.key==='Enter') sendChat(document.getElementById('chatInput'), document.getElementById('chatHint')); });
-document.getElementById('chatSendMobile').addEventListener('click', ()=> sendChat(document.getElementById('chatInputMobile'), document.getElementById('chatHintMobile')));
-document.getElementById('chatInputMobile').addEventListener('keydown', (e)=>{ if(e.key==='Enter') sendChat(document.getElementById('chatInputMobile'), document.getElementById('chatHintMobile')); });
+/* ---------------- confetti + sound ---------------- */
+function fireConfetti(){
+  const canvas = document.getElementById('confettiCanvas');
+  canvas.width = innerWidth; canvas.height = innerHeight;
+  const ctx = canvas.getContext('2d');
+  const colors = ['#c31432','#e0294a','#b9bfc9','#ffffff'];
+  const parts = Array.from({length:140}, ()=>({
+    x: innerWidth/2, y: innerHeight/2,
+    vx:(Math.random()-.5)*14, vy:(Math.random()-1.6)*14,
+    size: Math.random()*6+3, color: colors[Math.floor(Math.random()*colors.length)],
+    rot: Math.random()*360, vr:(Math.random()-.5)*10
+  }));
+  let frame = 0;
+  function anim(){
+    frame++;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    parts.forEach(p=>{
+      p.vy += 0.35; p.x += p.vx; p.y += p.vy; p.rot += p.vr;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot*Math.PI/180);
+      ctx.fillStyle = p.color; ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size);
+      ctx.restore();
+    });
+    if(frame < 160) requestAnimationFrame(anim); else ctx.clearRect(0,0,canvas.width,canvas.height);
+  }
+  anim();
+}
+function playWinSound(){
+  try{
+    const ctx = new (window.AudioContext||window.webkitAudioContext)();
+    const notes = [523.25, 659.25, 783.99, 1046.5];
+    notes.forEach((f,idx)=>{
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type='sine'; o.frequency.value=f;
+      o.connect(g); g.connect(ctx.destination);
+      const t = ctx.currentTime + idx*0.12;
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(0.18, t+0.02);
+      g.gain.exponentialRampToValueAtTime(0.0001, t+0.5);
+      o.start(t); o.stop(t+0.55);
+    });
+  }catch(e){}
+}
 
-/* ---------------- mobile sheet open/close ---------------- */
-const fab = document.getElementById('chatFab');
-const sheet = document.getElementById('chatSheet');
-const backdrop = document.getElementById('chatBackdrop');
-function openSheet(){ sheet.classList.add('open'); backdrop.classList.add('open'); }
-function closeSheet(){ sheet.classList.remove('open'); backdrop.classList.remove('open'); }
-fab.addEventListener('click', openSheet);
-backdrop.addEventListener('click', closeSheet);
-document.getElementById('chatCloseBtn').addEventListener('click', closeSheet);
+/* ---------------- admin: request access modal ---------------- */
+const adminModal = document.getElementById('adminModal');
+document.getElementById('adminGate').addEventListener('click', ()=>adminModal.classList.add('show'));
+document.getElementById('adminModalClose').addEventListener('click', ()=>adminModal.classList.remove('show'));
+document.getElementById('adminSendLinkBtn').addEventListener('click', async ()=>{
+  const name = document.getElementById('adminNameInput').value.trim();
+  const email = document.getElementById('adminEmailInput').value.trim();
+  const msgEl = document.getElementById('adminModalMsg');
+  if(!name || !email){ msgEl.textContent = lang==='fa'?'نام و ایمیل رو کامل کن':'Fill in name and email'; return; }
+  try{
+    const actionCodeSettings = { url: window.location.href, handleCodeInApp: true };
+    await sendSignInLinkToEmail(auth, email, actionCodeSettings);
+    localStorage.setItem('mavrix_admin_email', email);
+    localStorage.setItem('mavrix_admin_name', name);
+    msgEl.textContent = lang==='fa' ? 'لینک ورود به ایمیلت ارسال شد ✅' : 'Sign-in link sent to your email ✅';
+  }catch(e){
+    console.error(e);
+    msgEl.textContent = lang==='fa' ? 'ارسال لینک ناموفق بود' : 'Could not send the link';
+  }
+});
+
+/* ---------------- admin: complete magic-link sign-in ---------------- */
+let isAdminUser = false, isOwnerUser = false, adminName = null;
+async function handleMagicLink(){
+  if(isSignInWithEmailLink(auth, window.location.href)){
+    let email = localStorage.getItem('mavrix_admin_email');
+    if(!email){ email = prompt('برای تکمیل ورود، ایمیلت رو دوباره وارد کن:'); }
+    if(!email) return;
+    try{
+      const cred = await signInWithEmailLink(auth, email, window.location.href);
+      const uid = cred.user.uid;
+      const adminRef = doc(db,'admins',uid);
+      const existing = await getDoc(adminRef);
+      if(!existing.exists()){
+        const name = localStorage.getItem('mavrix_admin_name') || email;
+        const shortId = '#' + Math.random().toString(36).slice(2,8);
+        await setDoc(adminRef, { name, email, role:'admin', status:'pending', shortId, createdAt: serverTimestamp() });
+      }
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }catch(e){ console.error(e); }
+  }
+}
+handleMagicLink();
+
+onAuthStateChanged(auth, async (user)=>{
+  if(!user){ isAdminUser=false; isOwnerUser=false; return; }
+  try{
+    const snap = await getDoc(doc(db,'admins',user.uid));
+    if(snap.exists() && snap.data().status === 'approved'){
+      isAdminUser = true;
+      isOwnerUser = snap.data().role === 'owner';
+      adminName = snap.data().name;
+      document.getElementById('adminControls').classList.add('show');
+    }
+  }catch(e){ console.error(e); }
+});
+
+/* ---------------- admin: start / reset draw ---------------- */
+document.getElementById('startDrawBtn').addEventListener('click', async ()=>{
+  if(!isAdminUser) return;
+  if(!confirm(lang==='fa' ? 'قرعه‌کشی شروع بشه؟ این کار قابل بازگشت نیست.' : 'Start the draw? This cannot be undone.')) return;
+  try{
+    const snap = await getDocs(collection(db,'registrants'));
+    const pool = [];
+    snap.forEach(d=>{ if(!d.data().blocked) pool.push({ id:d.id, name:d.data().name }); });
+    const prizeCount = (settings.prizes && settings.prizes.length) || 1;
+    const shuffled = [...pool].sort(()=>Math.random()-0.5);
+    const winners = shuffled.slice(0, Math.min(prizeCount, shuffled.length)).map((w,idx)=>({
+      name:w.name, id:w.id, rank: settings.prizes?.[idx]?.rank ?? (idx+1)
+    }));
+    await updateDoc(doc(db,'settings','main'), {
+      drawStarted:true, winners, drawStartedAt: serverTimestamp()
+    });
+  }catch(e){ console.error(e); alert(lang==='fa'?'خطا در شروع قرعه‌کشی':'Failed to start the draw'); }
+});
+document.getElementById('resetBtn').addEventListener('click', async ()=>{
+  if(!isOwnerUser) return;
+  if(!confirm(lang==='fa' ? 'همه‌چیز پاک بشه و دور جدید شروع بشه؟' : 'Clear everything and start a new round?')) return;
+  try{
+    await updateDoc(doc(db,'settings','main'), { drawStarted:false, drawEnded:false, winners:[] });
+    localStorage.removeItem('mavrix_reg_id'); localStorage.removeItem('mavrix_reg_name');
+    window.__drawAnimationStarted = false;
+    location.reload();
+  }catch(e){ console.error(e); }
+});
 </script>
-
 </body>
 </html>
