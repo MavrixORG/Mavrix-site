@@ -29,7 +29,7 @@
   }
   *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color: transparent;}
   html,body{height:100%;}
-  button, .btn, a, .row, #langBtn, #langBtnM, #chatFab, #adminGate{
+  button, .btn, a, .row, #langBtn, #chatFab, #adminGate{
     -webkit-tap-highlight-color: transparent;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
@@ -68,6 +68,7 @@
 
   /* ================= HEADER ================= */
   header{
+    position:relative;
     display:flex; align-items:center; justify-content:space-between;
     padding:18px clamp(16px,4vw,40px);
     gap:16px;
@@ -79,20 +80,19 @@
     letter-spacing:1px;
     display:flex;
     align-items:center;
+    justify-content:center;
+    flex:0 0 auto;
   }
   .brand .x{ color:var(--crimson-2); }
-  header .side{ display:flex; align-items:center; gap:14px; font-size:13px; color:var(--text-1); }
+  header .side{ display:flex; align-items:center; gap:14px; font-size:13px; color:var(--text-1); flex:1 1 0; }
   header .side .val{ color:var(--text-0); font-weight:600; }
   #langBtn{
-    width:34px; height:34px; border-radius:50%;
+    width:34px; height:34px; border-radius:50%; flex:0 0 auto;
     background:var(--glass); border:1px solid var(--glass-brd); color:var(--text-1);
     font-size:11px; font-weight:700; letter-spacing:.5px;
     display:flex; align-items:center; justify-content:center;
   }
   #langBtn:hover{ border-color:var(--glass-brd-strong); color:var(--text-0); }
-
-  .mobile-only{ display:none; }
-  .desktop-only{ display:flex; }
 
   /* ================= LAYOUT ================= */
   main{
@@ -257,7 +257,7 @@
 
   #adminGate{
     position:fixed; bottom:20px; right:20px; z-index:30;
-    font-size:0; width:10px; height:10px; opacity:.15; background:transparent; border:none;
+    font-size:0; width:44px; height:44px; opacity:0; background:transparent; border:none;
   }
 
   footer{ text-align:center; padding:18px; font-size:11px; color:var(--text-2); }
@@ -265,11 +265,17 @@
   /* ================= RESPONSIVE ================= */
   @media (max-width:860px){
     main{ grid-template-columns:1fr; padding-bottom:120px; }
-    .desktop-only{ display:none; }
-    .mobile-only{ display:flex; }
-    header{ flex-direction:column; align-items:stretch; gap:10px; text-align:center; }
-    header .brand{ font-size:26px; text-align:center; }
-    header .side{ justify-content:center; }
+    header{
+      flex-direction:column; align-items:center; gap:8px; text-align:center;
+      padding-top:16px;
+    }
+    header .side{ flex:none; }
+    header .side:first-of-type{ order:2; justify-content:center; }
+    header .side:last-of-type{ order:3; justify-content:center; }
+    .brand{ order:1; font-size:26px; margin-bottom:4px; }
+    #langBtn{
+      position:absolute; top:14px; left:14px; z-index:5;
+    }
     #chatDesktop{ display:none; }
     #chatFab{ display:flex; }
     .col-side{ order:2; }
@@ -282,24 +288,21 @@
 <canvas id="confettiCanvas"></canvas>
 
 <header>
+  <div class="side" style="min-width:0;">
+    <span id="dateDisplay" class="val"></span>
+  </div>
+
   <div class="brand" id="brandWrap">
     <img id="brandLogo" src="logo.png" alt="MAVRIX" style="height:34px; display:block;"
          onerror="this.style.display='none'; document.getElementById('brandFallback').style.display='inline';">
     <span id="brandFallback" style="display:none;">MAVRI<span class="x">X</span></span>
   </div>
-  <div class="side desktop-only">
-    <span id="dateDisplay" class="val"></span>
-  </div>
-  <div class="side desktop-only">
+
+  <div class="side" style="min-width:0; justify-content:flex-end;">
     <span id="timerDisplay" class="val num">--:--:--</span>
-    <button id="langBtn" data-fa="EN" data-en="PR">EN</button>
   </div>
 
-  <div class="side mobile-only" style="justify-content:center;">
-    <span id="dateDisplayM"></span>
-    <span id="timerDisplayM" class="val num">--:--:--</span>
-    <button id="langBtnM" data-fa="EN" data-en="PR">EN</button>
-  </div>
+  <button id="langBtn" data-fa="EN" data-en="PR">EN</button>
 </header>
 
 <main>
@@ -465,7 +468,6 @@ function applyLang(){
   });
   const btnLbl = lang === 'fa' ? 'EN' : 'PR';
   document.getElementById('langBtn').textContent = btnLbl;
-  document.getElementById('langBtnM').textContent = btnLbl;
 }
 function toggleLang(){
   lang = lang === 'fa' ? 'en' : 'fa';
@@ -473,7 +475,6 @@ function toggleLang(){
   applyLang();
 }
 document.getElementById('langBtn').addEventListener('click', toggleLang);
-document.getElementById('langBtnM').addEventListener('click', toggleLang);
 applyLang();
 document.getElementById('year').textContent = new Date().getFullYear();
 
@@ -487,7 +488,6 @@ function tickClock(){
     timeZone:'Asia/Tehran', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false
   }).format(now);
   document.getElementById('dateDisplay').textContent = dateStr;
-  document.getElementById('dateDisplayM').textContent = dateStr;
   updateCountdown(timeStr);
 }
 let regDeadline = null; // Date, from settings.timerEndsAt
@@ -505,7 +505,6 @@ function updateCountdown(nowTimeStr){
     }
   }
   document.getElementById('timerDisplay').textContent = text;
-  document.getElementById('timerDisplayM').textContent = text;
 }
 setInterval(tickClock, 1000);
 tickClock();
@@ -555,6 +554,23 @@ function newCaptcha(){
 let settings = {};
 let myRegistrantId = localStorage.getItem('mavrix_reg_id') || null;
 let myRegistrantName = localStorage.getItem('mavrix_reg_name') || null;
+
+// اگه لوکال‌استوریج پاک شده باشه ولی این دستگاه قبلاً ثبت‌نام کرده، پیداش کن
+(async function recoverRegistration(){
+  if(myRegistrantId) return;
+  try{
+    const fp = getFingerprint();
+    const fpQ = query(collection(db,'registrants'), where('fingerprint','==', fp));
+    const snap = await getDocs(fpQ);
+    if(!snap.empty){
+      const d = snap.docs[0];
+      myRegistrantId = d.id; myRegistrantName = d.data().name;
+      localStorage.setItem('mavrix_reg_id', myRegistrantId);
+      localStorage.setItem('mavrix_reg_name', myRegistrantName);
+      if(!settings.drawStarted) showStage('stageDone');
+    }
+  }catch(e){ console.error(e); }
+})();
 
 onSnapshot(doc(db,'settings','main'), (snap)=>{
   settings = snap.data() || {};
@@ -690,11 +706,17 @@ async function sendChat(inputEl){
   if(!text) return;
   let senderType='guest', senderName=myRegistrantName, senderId=myRegistrantId;
   if(isAdminUser){ senderType = isOwnerUser ? 'owner' : 'admin'; senderName = adminName || 'Admin'; senderId = auth.currentUser?.uid || ''; }
-  if(senderType==='guest' && !myRegistrantId){ return; }
+  if(senderType==='guest' && !myRegistrantId){
+    alert(lang==='fa' ? 'برای چت کردن اول باید ثبت‌نام کنی' : 'You need to register first to chat');
+    return;
+  }
   inputEl.value = '';
   try{
     await addDoc(collection(db,'chat'), { text, senderName, senderType, senderId, createdAt: serverTimestamp() });
-  }catch(e){ console.error(e); }
+  }catch(e){
+    console.error(e);
+    alert(lang==='fa' ? 'ارسال پیام ناموفق بود' : 'Failed to send the message');
+  }
 }
 document.getElementById('chatSendBtn').addEventListener('click', ()=>sendChat(document.getElementById('chatInput')));
 document.getElementById('chatInput').addEventListener('keydown', e=>{ if(e.key==='Enter') sendChat(e.target); });
