@@ -88,6 +88,10 @@
     width:auto;
     display:block;
     filter:drop-shadow(0 4px 16px rgba(196,18,63,.35));
+    -webkit-user-drag:none;
+    user-select:none;
+    -webkit-touch-callout:none;
+    pointer-events:none;
   }
   .logo-img-mobile{
     height:48px;
@@ -311,6 +315,14 @@
     gap:8px;
   }
   .names-list .item .dot{width:6px;height:6px;border-radius:50%;background:var(--crimson);flex-shrink:0;}
+  .badge-tag{
+    color:var(--text-dim);
+    font-weight:600;
+    font-size:.82em;
+    margin-inline-end:6px;
+    font-variant-numeric:tabular-nums;
+    opacity:.85;
+  }
   .names-empty{color:var(--text-dim);font-size:.85rem;text-align:center;padding:20px 0;}
 
   /* ================= CHAT — desktop fixed bottom-left ================= */
@@ -452,7 +464,7 @@
   <!-- ============ DESKTOP HEADER ============ -->
   <header class="top glass">
     <div class="head-date" id="headDate">—</div>
-    <div class="head-name"><img src="logo.png" alt="MAVRIX" class="logo-img"></div>
+    <div class="head-name"><img src="logo.png" alt="MAVRIX" class="logo-img" draggable="false" oncontextmenu="return false"></div>
     <div class="head-right">
       <div class="timer" id="timerDisplay">--:--:--</div>
       <button class="lang-switch" id="langSwitchDesktop" aria-label="switch language">
@@ -463,7 +475,7 @@
 
   <!-- ============ MOBILE HEADER ============ -->
   <div class="mobile-head glass">
-    <div class="head-name"><img src="logo.png" alt="MAVRIX" class="logo-img logo-img-mobile"></div>
+    <div class="head-name"><img src="logo.png" alt="MAVRIX" class="logo-img logo-img-mobile" draggable="false" oncontextmenu="return false"></div>
     <div class="mobile-row2">
       <div class="head-date" id="headDateMobile">—</div>
       <div class="timer" id="timerDisplayMobile">--:--:--</div>
@@ -608,6 +620,7 @@ const DICT = {
     dupName:"این نام قبلاً ثبت شده، یه نام دیگه امتحان کن.",
     dupFP:"شما قبلاً ثبت‌نام کرده‌اید.",
     emptyName:"لطفاً نامت رو وارد کن.",
+    invalidName:"نام فقط می‌تونه شامل حروف فارسی/انگلیسی، عدد و . - _ باشه.",
     full:"ظرفیت تکمیل شده.",
     closedErr:"ثبت‌نام بسته است.",
     chatNeedsReg:"برای نوشتن پیام باید ثبت‌نام کرده باشی.",
@@ -634,6 +647,7 @@ const DICT = {
     dupName:"That name is already taken, try another.",
     dupFP:"You have already registered.",
     emptyName:"Please enter your name.",
+    invalidName:"Name can only contain Persian/English letters, digits, and . - _",
     full:"Capacity is full.",
     closedErr:"Registration is closed.",
     chatNeedsReg:"You must register to send messages.",
@@ -702,6 +716,7 @@ function getFingerprint(){
 }
 const myFingerprint = getFingerprint();
 let myRegisteredName = localStorage.getItem('mavrix_myname') || null;
+let myRegisteredBadge = localStorage.getItem('mavrix_mybadge') || null;
 
 /* ---------------- state ---------------- */
 let settings = {};
@@ -795,12 +810,31 @@ function renderNamesList(){
   }
   list.innerHTML = registrants
     .filter(r=>!r.blocked)
-    .map(r=>`<div class="item"><span class="dot"></span>${escapeHtml(r.name)}</div>`)
+    .map(r=>`<div class="item"><span class="dot"></span>${badgeHtml(r)}</div>`)
     .join('');
 }
 
 function escapeHtml(s){
   return String(s ?? '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function fmtBadge(b){
+  return '#' + String(b).padStart(3,'0');
+}
+function displayName(r){
+  return `${fmtBadge(r.badge)} ${r.name}`;
+}
+function badgeHtml(r){
+  return `<span class="badge-tag">${fmtBadge(r.badge)}</span>${escapeHtml(r.name)}`;
+}
+function generateUniqueBadge(){
+  const used = new Set(registrants.map(r=>r.badge).filter(b=>b!=null));
+  let tries = 0;
+  let badge;
+  do{
+    badge = Math.floor(Math.random()*999)+1;
+    tries++;
+  } while(used.has(badge) && tries < 500);
+  return badge;
 }
 
 /* ---------------- stage switching ---------------- */
@@ -837,7 +871,8 @@ function renderStage(){
 
   const already = myRegisteredName && registrants.some(r=>r.fingerprint===myFingerprint);
   if(already){
-    document.getElementById('registeredName').textContent = myRegisteredName;
+    const mine = registrants.find(r=>r.fingerprint===myFingerprint);
+    document.getElementById('registeredName').innerHTML = mine ? badgeHtml(mine) : escapeHtml(myRegisteredName);
     showStage('stageRegistered');
   } else if(!settings.registrationOpen){
     showStage('stageClosed');
@@ -865,6 +900,8 @@ document.getElementById('regForm').addEventListener('submit', async (e)=>{
   errEl.textContent = '';
   const name = document.getElementById('nameInput').value.trim();
   if(!name){ errEl.textContent = d.emptyName; return; }
+  const validNamePattern = /^[a-zA-Z0-9\u0600-\u06FF\s._-]+$/;
+  if(!validNamePattern.test(name)){ errEl.textContent = d.invalidName; return; }
   if(!settings.registrationOpen){ errEl.textContent = d.closedErr; return; }
   if(settings.capacity && registrants.length >= settings.capacity){ errEl.textContent = d.full; return; }
   if(registrants.some(r=>r.fingerprint === myFingerprint)){ errEl.textContent = d.dupFP; return; }
@@ -872,11 +909,14 @@ document.getElementById('regForm').addEventListener('submit', async (e)=>{
 
   btn.disabled = true;
   try{
+    const badge = generateUniqueBadge();
     await addDoc(collection(db,'registrants'), {
-      name, fingerprint: myFingerprint, registeredAt: serverTimestamp(), blocked:false
+      name, badge, fingerprint: myFingerprint, registeredAt: serverTimestamp(), blocked:false
     });
     myRegisteredName = name;
+    myRegisteredBadge = badge;
     localStorage.setItem('mavrix_myname', name);
+    localStorage.setItem('mavrix_mybadge', String(badge));
   }catch(err){
     errEl.textContent = (lang==='fa' ? 'خطا در ثبت‌نام، دوباره تلاش کن.' : 'Registration failed, try again.');
   }
@@ -898,7 +938,7 @@ function startDrawAnimation(){
   document.getElementById('countdownNum').classList.remove('show');
   document.getElementById('winnerReveal').classList.remove('show');
 
-  const names = registrants.filter(r=>!r.blocked).map(r=>r.name);
+  const names = registrants.filter(r=>!r.blocked);
   if(!names.length) return;
 
   const slow = names.length <= 10;
@@ -923,10 +963,10 @@ function shuffle(arr){
   return arr;
 }
 
-function spawnFloatName(name, stage){
+function spawnFloatName(registrant, stage){
   const el = document.createElement('div');
   el.className = 'float-name';
-  el.textContent = name;
+  el.innerHTML = badgeHtml(registrant);
   const w = stage.clientWidth || 400, h = stage.clientHeight || 400;
   const x = Math.random()*(w-120)+10;
   const y = Math.random()*(h-40)+10;
@@ -1077,7 +1117,10 @@ onSnapshot(collection(db,'registrants'), (snap)=>{
 let lastMsgTime = parseInt(localStorage.getItem('mavrix_last_msg')||'0', 10);
 
 function renderChatMessages(msgs){
-  const html = msgs.map(m=>`<div class="chat-msg"><span class="sender">${escHtml(m.senderName)}:</span> <span class="text">${escHtml(m.text)}</span></div>`).join('');
+  const html = msgs.map(m=>{
+    const badgeSpan = (m.senderBadge!=null) ? `<span class="badge-tag">#${String(m.senderBadge).padStart(3,'0')}</span>` : '';
+    return `<div class="chat-msg">${badgeSpan}<span class="sender">${escHtml(m.senderName)}:</span> <span class="text">${escHtml(m.text)}</span></div>`;
+  }).join('');
   const c1 = document.getElementById('chatMessages');
   const c2 = document.getElementById('chatMessagesMobile');
   c1.innerHTML = html; c1.scrollTop = c1.scrollHeight;
@@ -1114,7 +1157,7 @@ async function sendChat(inputEl, hintEl){
 
   try{
     await addDoc(collection(db,'chat'), {
-      senderName: mine.name, fingerprint: myFingerprint, text: text.slice(0,300), sentAt: serverTimestamp()
+      senderName: mine.name, senderBadge: mine.badge, fingerprint: myFingerprint, text: text.slice(0,300), sentAt: serverTimestamp()
     });
     inputEl.value = '';
     hintEl.textContent = '';
