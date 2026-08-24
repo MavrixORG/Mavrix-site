@@ -51,6 +51,8 @@
     min-height:100%;
     overflow-x:hidden;
     -webkit-font-smoothing:antialiased;
+    display:flex;
+    flex-direction:column;
   }
   html[data-lang="en"] body, [data-lang="en"] body { font-family:var(--ff-num), 'Vazirmatn', sans-serif; }
   ::selection{ background:var(--crimson); color:#fff; }
@@ -96,14 +98,24 @@
 
   /* ================= LAYOUT ================= */
   main{
-    max-width:1180px; margin:0 auto; padding:8px clamp(14px,4vw,40px) 100px;
+    width:100%; max-width:1180px; margin:0 auto; padding:8px clamp(14px,4vw,40px) 60px;
     display:grid;
     grid-template-columns: 1fr 300px;
     gap:20px;
     align-items:start;
+    flex:1;
+  }
+  @media (min-height:760px){
+    main{ align-content:center; }
   }
   .col-main{ display:flex; flex-direction:column; gap:16px; min-width:0; }
   .col-side{ display:flex; flex-direction:column; gap:16px; }
+
+  /* ---- ended banner ---- */
+  #endedBanner{ display:none; padding:22px; text-align:center; border-color:var(--crimson-2); background:rgba(224,41,74,.08); }
+  #endedBanner.show{ display:block; }
+  #endedBanner .icon{ font-size:30px; margin-bottom:6px; }
+  #endedBanner .txt{ font-size:clamp(17px,2.6vw,22px); font-weight:800; color:var(--text-0); }
 
   /* ---- prize box ---- */
   #prizeBox{ padding:16px 20px; display:none; }
@@ -206,7 +218,7 @@
 
   /* ================= CHAT ================= */
   #chatDesktop{
-    position:fixed; bottom:20px; left:20px; width:300px; height:380px;
+    position:fixed; bottom:20px; left:20px; width:360px; height:460px;
     display:flex; flex-direction:column; overflow:hidden; z-index:40;
   }
   #chatDesktop .head{ padding:12px 16px; border-bottom:1px solid var(--glass-brd); font-size:13px; font-weight:700; }
@@ -307,6 +319,11 @@
 
 <main>
   <div class="col-main">
+    <div id="endedBanner" class="glass">
+      <div class="icon">⏰</div>
+      <div class="txt" data-fa="ثبت‌نام به پایان رسید" data-en="Registration has ended">ثبت‌نام به پایان رسید</div>
+    </div>
+
     <div id="prizeBox" class="glass">
       <div class="label" data-fa="جوایز" data-en="PRIZES">جوایز</div>
       <div class="items" id="prizeItems"></div>
@@ -491,8 +508,11 @@ function tickClock(){
   updateCountdown(timeStr);
 }
 let regDeadline = null; // Date, from settings.timerEndsAt
+let settings = {};
 function updateCountdown(nowTimeStr){
   let text = nowTimeStr;
+  const banner = document.getElementById('endedBanner');
+  let ended = false;
   if(regDeadline){
     const diff = regDeadline.getTime() - Date.now();
     if(diff > 0){
@@ -501,9 +521,11 @@ function updateCountdown(nowTimeStr){
       const s = String(Math.floor((diff%60000)/1000)).padStart(2,'0');
       text = `${h}:${m}:${s}`;
     } else {
-      text = lang==='fa' ? 'به پایان رسید' : 'Ended';
+      text = lang==='fa' ? '۰۰:۰۰:۰۰' : '00:00:00';
+      ended = true;
     }
   }
+  banner.classList.toggle('show', ended && !(settings && settings.drawStarted));
   document.getElementById('timerDisplay').textContent = text;
 }
 setInterval(tickClock, 1000);
@@ -551,7 +573,6 @@ function newCaptcha(){
 }
 
 /* ---------------- settings listener ---------------- */
-let settings = {};
 let myRegistrantId = localStorage.getItem('mavrix_reg_id') || null;
 let myRegistrantName = localStorage.getItem('mavrix_reg_name') || null;
 
