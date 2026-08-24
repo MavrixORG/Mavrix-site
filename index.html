@@ -449,7 +449,8 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
 import {
   getFirestore, doc, onSnapshot, collection, addDoc, updateDoc,
-  query, orderBy, limit, where, getDocs, serverTimestamp, setDoc, getDoc
+  query, orderBy, limit, where, getDocs, serverTimestamp, setDoc, getDoc,
+  writeBatch
 } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 import {
   getAuth, onAuthStateChanged, sendSignInLinkToEmail,
@@ -919,15 +920,27 @@ document.getElementById('startDrawBtn').addEventListener('click', async ()=>{
     });
   }catch(e){ console.error(e); alert(lang==='fa'?'خطا در شروع قرعه‌کشی':'Failed to start the draw'); }
 });
+async function clearCollection(name){
+  const snap = await getDocs(collection(db, name));
+  const docs = snap.docs;
+  // batch حداکثر ۵۰۰ عملیات قبول می‌کنه، پس اگه بیشتر بود تیکه‌تیکه پاک می‌کنیم
+  for(let i=0; i<docs.length; i+=450){
+    const batch = writeBatch(db);
+    docs.slice(i, i+450).forEach(d => batch.delete(d.ref));
+    await batch.commit();
+  }
+}
 document.getElementById('resetBtn').addEventListener('click', async ()=>{
   if(!isOwnerUser) return;
   if(!confirm(lang==='fa' ? 'همه‌چیز پاک بشه و دور جدید شروع بشه؟' : 'Clear everything and start a new round?')) return;
   try{
+    await clearCollection('registrants');
+    await clearCollection('chat');
     await updateDoc(doc(db,'settings','main'), { drawStarted:false, drawEnded:false, winners:[] });
     localStorage.removeItem('mavrix_reg_id'); localStorage.removeItem('mavrix_reg_name');
     window.__drawAnimationStarted = false;
     location.reload();
-  }catch(e){ console.error(e); }
+  }catch(e){ console.error(e); alert(lang==='fa' ? 'خطا در ریست کردن' : 'Failed to reset'); }
 });
 </script>
 </body>
