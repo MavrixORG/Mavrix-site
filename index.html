@@ -344,7 +344,7 @@
         <h2 data-fa="ثبت‌نام در قرعه‌کشی" data-en="Join the raffle">ثبت‌نام در قرعه‌کشی</h2>
         <div class="field">
           <label data-fa="نام شما" data-en="Your name">نام شما</label>
-          <input id="nameInput" maxlength="40" data-fa-ph="مثلاً علی رضایی" data-en-ph="e.g. Alex Reid" placeholder="مثلاً علی رضایی">
+          <input id="nameInput" maxlength="40" data-fa-ph="نام خود را وارد کنید (فارسی/انگلیسی)" data-en-ph="Enter your name" placeholder="نام خود را وارد کنید (فارسی/انگلیسی)">
         </div>
         <div class="field">
           <label data-fa="یک سؤال ساده" data-en="A quick check">یک سؤال ساده</label>
@@ -509,6 +509,7 @@ function tickClock(){
   updateCountdown(timeStr);
 }
 let regDeadline = null; // Date, from settings.timerEndsAt
+let regEnded = false;
 let settings = {};
 function updateCountdown(nowTimeStr){
   let text = nowTimeStr;
@@ -526,6 +527,7 @@ function updateCountdown(nowTimeStr){
       ended = true;
     }
   }
+  if(ended !== regEnded){ regEnded = ended; refreshRegistrationAvailability(); }
   banner.classList.toggle('show', ended && !(settings && settings.drawStarted));
   document.getElementById('timerDisplay').textContent = text;
 }
@@ -597,6 +599,7 @@ let myRegistrantName = localStorage.getItem('mavrix_reg_name') || null;
 onSnapshot(doc(db,'settings','main'), (snap)=>{
   settings = snap.data() || {};
   regDeadline = settings.timerEndsAt ? settings.timerEndsAt.toDate() : null;
+  regEnded = !!(regDeadline && regDeadline.getTime() <= Date.now());
 
   // prizes
   const prizeBox = document.getElementById('prizeBox');
@@ -625,9 +628,12 @@ onSnapshot(doc(db,'settings','main'), (snap)=>{
 
   // admin controls visibility
   document.getElementById('startDrawBtn').disabled = !!settings.drawStarted;
+
+  refreshRegistrationAvailability();
 });
 
 /* ---------------- capacity + names list ---------------- */
+let currentRegCount = 0;
 onSnapshot(collection(db,'registrants'), (snap)=>{
   let count = 0;
   const rows = [];
@@ -638,13 +644,43 @@ onSnapshot(collection(db,'registrants'), (snap)=>{
     rows.push({ id:d.id, name:v.name, t: v.registeredAt?.toMillis?.() || 0 });
   });
   rows.sort((a,b)=>b.t-a.t);
-  const cap = settings.capacity || 0;
-  document.getElementById('capNum').textContent = `${count} / ${cap || '∞'}`;
-  document.getElementById('capInline').textContent = `${count} / ${cap || '∞'}`;
+  currentRegCount = count;
+  const cap = Number.isFinite(settings.capacity) ? settings.capacity : null;
+  document.getElementById('capNum').textContent = `${count} / ${cap === null ? '∞' : cap}`;
+  document.getElementById('capInline').textContent = `${count} / ${cap === null ? '∞' : cap}`;
   document.getElementById('namesList').innerHTML = rows.slice(0,60).map(r=>
-    `<div class="row"><span class="id num">#${r.id.slice(0,4)}</span><span>${escapeHtml(r.name)}</span></div>`
+    `<div class="row"><span class="id num">#${randomShortId(r.id)}</span><span>${escapeHtml(r.name)}</span></div>`
   ).join('');
+  refreshRegistrationAvailability();
 });
+
+// یه‌جا تصمیم می‌گیره ثبت‌نام باز هست یا نه (تایمر تموم شده/ظرفیت پر/دستی بسته شده)
+// و فرم رو غیرفعال می‌کنه تا کسی نتونه بعد از بسته‌شدن ثبت‌نام کنه
+function isRegistrationClosed(){
+  if(settings.registrationOpen === false) return true;
+  const capLimit = Number.isFinite(settings.capacity) ? settings.capacity : null;
+  if(capLimit !== null && currentRegCount >= capLimit) return true;
+  if(regEnded) return true;
+  return false;
+}
+function refreshRegistrationAvailability(){
+  if(myRegistrantId || (settings && settings.drawStarted)) return; // این کاربر یا صفحه در وضعیت دیگه‌ایه
+  const closed = isRegistrationClosed();
+  const btn = document.getElementById('submitRegBtn');
+  const nameEl = document.getElementById('nameInput');
+  const captchaEl = document.getElementById('captchaInput');
+  const msgEl = document.getElementById('formMsg');
+  if(!btn) return;
+  btn.disabled = closed;
+  if(nameEl) nameEl.disabled = closed;
+  if(captchaEl) captchaEl.disabled = closed;
+  if(closed){
+    msgEl.textContent = lang==='fa' ? 'ثبت‌نام بسته است' : 'Registration is closed';
+    msgEl.className = 'err';
+  } else if(msgEl.textContent === (lang==='fa' ? 'ثبت‌نام بسته است' : 'Registration is closed')){
+    msgEl.textContent = ''; msgEl.className = '';
+  }
+}
 
 /* ---------------- registration submit ---------------- */
 document.getElementById('submitRegBtn').addEventListener('click', async ()=>{
@@ -665,7 +701,7 @@ document.getElementById('submitRegBtn').addEventListener('click', async ()=>{
     msgEl.textContent = lang==='fa' ? 'یه لحظه صبر کن و دوباره امتحان کن' : 'Please wait a moment and try again';
     msgEl.className = 'err'; return;
   }
-  if(settings.registrationOpen === false){
+  if(isRegistrationClosed()){
     msgEl.textContent = lang==='fa' ? 'ثبت‌نام بسته است' : 'Registration is closed';
     msgEl.className = 'err'; return;
   }
@@ -705,11 +741,21 @@ function escapeHtml(s){
   return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
+// آیدی کوتاه نمایشی: یک عدد + یک حرف انگلیسی (مثل R4 یا 3A)، ثابت برای هر ثبت‌نام
+function randomShortId(docId){
+  let hash = 0;
+  for(let i=0;i<docId.length;i++){ hash = (hash*31 + docId.charCodeAt(i)) >>> 0; }
+  const letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  const digit = hash % 10;
+  const letter = letters[Math.floor(hash / 10) % 26];
+  return (hash % 2 === 0) ? `${digit}${letter}` : `${letter}${digit}`;
+}
+
 /* ---------------- chat ---------------- */
 function renderMsg(v){
   const cls = v.senderType === 'owner' ? 'owner' : v.senderType === 'admin' ? 'admin' : 'guest';
   const icon = v.senderType === 'owner' ? '👑 ' : v.senderType === 'admin' ? '🛡️ ' : '';
-  const idTag = v.senderType === 'guest' ? `#${(v.senderId||'').slice(0,4)} ` : '';
+  const idTag = v.senderType === 'guest' ? `#${randomShortId(v.senderId||'')} ` : '';
   return `<div class="msg ${cls}"><span class="sender">${icon}${idTag}${escapeHtml(v.senderName||'')}</span>: ${escapeHtml(v.text||'')}</div>`;
 }
 const chatQ = query(collection(db,'chat'), orderBy('createdAt','desc'), limit(80));
