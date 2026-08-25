@@ -228,6 +228,11 @@
         <div class="field"><label>Slow Mode (ثانیه بین پیام‌ها)</label><input id="slowModeIn" type="number" min="0"></div>
         <button class="btn small" id="saveChatBtn">ذخیره</button>
         <div id="chatSettingsMsg" class="msg"></div>
+        <hr style="border-color:var(--glass-brd, #333); margin:18px 0;">
+        <div class="field"><label>پاک کردن کامل چت</label>
+          <button class="btn small danger" id="clearChatBtn">پاک کردن همه پیام‌ها</button>
+        </div>
+        <div id="clearChatMsg" class="msg"></div>
       </div>
     </section>
 
@@ -711,6 +716,16 @@ document.getElementById('saveChatBtn').addEventListener('click', async ()=>{
   await updateDoc(doc(db,'settings','main'), { slowModeSeconds: v });
   logAction('update_slow_mode', String(v));
   flashMsg('chatSettingsMsg','ذخیره شد ✅','ok');
+});
+document.getElementById('clearChatBtn').addEventListener('click', async ()=>{
+  if(!can('chat')) return;
+  if(!confirm('همه‌ی پیام‌های چت برای همیشه پاک بشه؟ این کار قابل بازگشت نیست.')) return;
+  try{
+    const chatSnap = await getDocsFromCollection('chat');
+    for(const d of chatSnap) await deleteDoc(doc(db,'chat',d.id));
+    logAction('clear_chat', String(chatSnap.length));
+    flashMsg('clearChatMsg','چت پاک شد ✅','ok');
+  }catch(e){ console.error(e); flashMsg('clearChatMsg','خطا در پاک کردن چت','err'); }
 });
 
 /* ---------------- backup ---------------- */
