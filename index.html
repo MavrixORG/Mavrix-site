@@ -195,7 +195,7 @@
   #winnerReveal.show{ display:block; }
   #winnerReveal .eyebrow{ font-size:12px; letter-spacing:2px; color:var(--crimson-2); font-weight:700; margin-bottom:12px; }
   #winnerReveal .names{ display:flex; flex-direction:column; gap:14px; }
-  #winnerReveal .wname{ font-size:clamp(28px,6vw,46px); font-weight:900; }
+  #winnerReveal .wname{ font-size:clamp(28px,6vw,46px); font-weight:900; color:var(--text-0); }
   #winnerReveal .wrank{ font-size:12px; color:var(--text-2); margin-bottom:4px; }
 
   #adminControls{ display:none; margin-top:22px; padding-top:18px; border-top:1px dashed var(--glass-brd); text-align:center; gap:10px; flex-wrap:wrap; justify-content:center; }
@@ -225,11 +225,19 @@
   #chatMsgs{ flex:1; overflow-y:auto; padding:10px 14px; display:flex; flex-direction:column; gap:8px; }
   #chatMsgs::-webkit-scrollbar{ width:4px; }
   #chatMsgs::-webkit-scrollbar-thumb{ background:var(--glass-brd-strong); border-radius:4px; }
-  .msg{ font-size:13px; line-height:1.5; }
+  .msg{ font-size:13px; line-height:1.5; cursor:pointer; padding:3px 6px; border-radius:8px; transition:background .15s; }
+  .msg:hover, .msg:active{ background:rgba(255,255,255,.05); }
   .msg .sender{ font-weight:700; }
   .msg.owner .sender{ color:#ffd76a; }
   .msg.admin .sender{ color:var(--crimson-2); }
   .msg.guest .sender{ color:var(--silver); }
+  .msg .quote{ display:block; font-size:11px; color:var(--text-2); border-right:2px solid var(--crimson-2); padding-right:6px; margin-bottom:3px; opacity:.85; }
+  .msg .quote b{ color:var(--text-1); font-weight:700; }
+  .replyPreview{ display:none; align-items:center; justify-content:space-between; gap:8px; padding:8px 12px; border-top:1px solid var(--glass-brd); font-size:12px; background:rgba(255,255,255,.03); }
+  .replyPreview.show{ display:flex; }
+  .replyPreview .rpText{ overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; color:var(--text-2); border-right:2px solid var(--crimson-2); padding-right:6px; }
+  .replyPreview .rpText b{ color:var(--text-1); }
+  .replyPreview button{ background:none; border:none; color:var(--text-2); font-size:15px; flex-shrink:0; }
   #chatInputRow{ display:flex; gap:8px; padding:10px 12px; border-top:1px solid var(--glass-brd); }
   #chatInputRow input{
     flex:1; background:rgba(255,255,255,.04); border:1px solid var(--glass-brd); border-radius:10px;
@@ -243,11 +251,16 @@
 
   #chatFab{
     display:none; position:fixed; bottom:22px; left:22px; z-index:50;
-    width:54px; height:54px; border-radius:50%; border:none;
-    background:linear-gradient(135deg,var(--crimson),var(--crimson-2));
-    color:#fff; font-size:22px; box-shadow:0 10px 26px var(--crimson-glow);
-    align-items:center; justify-content:center;
+    width:56px; height:56px; border-radius:50%;
+    border:1px solid var(--glass-brd-strong);
+    background:var(--glass);
+    backdrop-filter: blur(18px) saturate(160%);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    color:var(--crimson); box-shadow:0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06);
+    align-items:center; justify-content:center; transition:transform .2s, border-color .2s;
   }
+  #chatFab:hover{ transform:translateY(-2px); border-color:var(--crimson); }
+  #chatFab svg{ width:24px; height:24px; display:block; }
   #chatSheet{
     display:none; position:fixed; inset:auto 0 0 0; height:75vh; z-index:60;
     background:var(--bg-1); border-top:1px solid var(--glass-brd-strong);
@@ -310,7 +323,7 @@
     <span id="brandFallback" style="display:none;">MAVRI<span class="x">X</span></span>
   </div>
 
-  <div class="side" style="min-width:0; justify-content:flex-end;">
+  <div class="side" id="timerSide" style="min-width:0; justify-content:flex-end;">
     <span id="timerDisplay" class="val num">--:--:--</span>
   </div>
 
@@ -337,6 +350,13 @@
         <h1 data-fa="قرعه‌کشی MAVRIX" data-en="MAVRIX Raffle">قرعه‌کشی MAVRIX</h1>
         <p data-fa="برای شرکت در قرعه‌کشی ثبت‌نام کن" data-en="Register to join the raffle">برای شرکت در قرعه‌کشی ثبت‌نام کن</p>
         <button class="btn" id="openFormBtn" data-fa="ثبت‌نام" data-en="Register" data-fa-full="ظرفیت پر شده" data-en-full="Capacity full">ثبت‌نام</button>
+      </div>
+
+      <!-- admin / owner idle (no registration needed) -->
+      <div id="stageAdminIdle" class="stage">
+        <div class="cap num" id="capInlineAdmin">-- / --</div>
+        <h1 data-fa="پنل مدیریت" data-en="Admin panel">پنل مدیریت</h1>
+        <p id="adminIdleWho" data-fa="از پایین می‌تونی قرعه‌کشی رو شروع کنی" data-en="Use the controls below to start the draw">از پایین می‌تونی قرعه‌کشی رو شروع کنی</p>
       </div>
 
       <!-- registration form -->
@@ -396,6 +416,10 @@
 <div id="chatDesktop" class="glass">
   <div class="head" data-fa="چت" data-en="Chat">چت</div>
   <div id="chatMsgs"></div>
+  <div id="replyPreview" class="replyPreview">
+    <div class="rpText"><b id="replyPreviewName"></b>: <span id="replyPreviewText"></span></div>
+    <button id="replyPreviewClose" aria-label="cancel reply">✕</button>
+  </div>
   <div id="chatInputRow">
     <input id="chatInput" data-fa-ph="پیامت..." data-en-ph="Message..." placeholder="پیامت...">
     <button id="chatSendBtn">➤</button>
@@ -404,13 +428,25 @@
 </div>
 
 <!-- mobile chat -->
-<button id="chatFab">💬</button>
+<button id="chatFab" aria-label="chat">
+  <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M4 5.5C4 4.67 4.67 4 5.5 4h13c.83 0 1.5.67 1.5 1.5v10c0 .83-.67 1.5-1.5 1.5H9l-4 3.5v-3.5H5.5C4.67 17 4 16.33 4 15.5v-10Z"
+      stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/>
+    <circle cx="8.5" cy="10" r="1" fill="currentColor"/>
+    <circle cx="12" cy="10" r="1" fill="currentColor"/>
+    <circle cx="15.5" cy="10" r="1" fill="currentColor"/>
+  </svg>
+</button>
 <div id="chatSheet">
   <div class="sheetHead">
     <span data-fa="چت" data-en="Chat">چت</span>
     <button id="chatSheetClose">✕</button>
   </div>
   <div id="chatMsgsM" style="flex:1; overflow-y:auto; padding:10px 16px; display:flex; flex-direction:column; gap:8px;"></div>
+  <div id="replyPreviewM" class="replyPreview">
+    <div class="rpText"><b id="replyPreviewNameM"></b>: <span id="replyPreviewTextM"></span></div>
+    <button id="replyPreviewCloseM" aria-label="cancel reply">✕</button>
+  </div>
   <div id="chatInputRowM" style="display:flex; gap:8px; padding:12px; border-top:1px solid var(--glass-brd);">
     <input id="chatInputM" data-fa-ph="پیامت..." data-en-ph="Message..." placeholder="پیامت..." style="flex:1; background:rgba(255,255,255,.04); border:1px solid var(--glass-brd); border-radius:10px; padding:10px 12px; color:var(--text-0); font-family:inherit;">
     <button id="chatSendBtnM" style="width:40px; border-radius:10px; border:none; background:var(--crimson); color:#fff;">➤</button>
@@ -473,6 +509,9 @@ const auth = getAuth(app);
 /* ---------------- language ---------------- */
 let lang = localStorage.getItem('mavrix_lang') || 'fa';
 let capacityFullFlag = false;
+let regDeadline = null; // Date, from settings.timerEndsAt
+let regEnded = false;
+let settings = {};
 function applyLang(){
   document.documentElement.lang = lang;
   document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
@@ -488,6 +527,7 @@ function applyLang(){
   const btnLbl = lang === 'fa' ? 'EN' : 'PR';
   document.getElementById('langBtn').textContent = btnLbl;
   updateIdleButton();
+  if(typeof updateCountdown === 'function') updateCountdown();
 }
 function toggleLang(){
   lang = lang === 'fa' ? 'en' : 'fa';
@@ -498,43 +538,53 @@ document.getElementById('langBtn').addEventListener('click', toggleLang);
 applyLang();
 document.getElementById('year').textContent = new Date().getFullYear();
 
-/* ---------------- date / clock (Tehran) ---------------- */
-function tickClock(){
-  const now = new Date();
-  const dateStr = new Intl.DateTimeFormat(lang === 'fa' ? 'fa-IR' : 'en-US', {
-    timeZone:'Asia/Tehran', weekday:'short', day:'numeric', month:'short'
-  }).format(now);
-  const timeStr = new Intl.DateTimeFormat('en-GB', {
-    timeZone:'Asia/Tehran', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false
-  }).format(now);
-  document.getElementById('dateDisplay').textContent = dateStr;
-  updateCountdown(timeStr);
-}
-let regDeadline = null; // Date, from settings.timerEndsAt
-let regEnded = false;
-let settings = {};
-function updateCountdown(nowTimeStr){
-  let text = nowTimeStr;
+/* ---------------- header: draw date/timer before draw, live clock during draw (Tehran) ---------------- */
+function updateCountdown(){
+  const dateEl = document.getElementById('dateDisplay');
+  const timerSide = document.getElementById('timerSide');
+  const timerEl = document.getElementById('timerDisplay');
   const banner = document.getElementById('endedBanner');
+
+  // وقتی قرعه‌کشی شروع شده: دیگه شمارش‌معکوس معنی نداره، تاریخ و ساعت لحظه‌ای (زنده) نشون بده
+  if(settings && settings.drawStarted){
+    const now = new Date();
+    dateEl.textContent = new Intl.DateTimeFormat(lang === 'fa' ? 'fa-IR' : 'en-US', {
+      timeZone:'Asia/Tehran', weekday:'short', day:'numeric', month:'short'
+    }).format(now);
+    timerEl.textContent = new Intl.DateTimeFormat('en-GB', {
+      timeZone:'Asia/Tehran', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false
+    }).format(now);
+    timerSide.style.display = '';
+    banner.classList.remove('show');
+    return;
+  }
+
   let ended = false;
   if(regDeadline){
+    // قبل از شروع قرعه‌کشی: فقط تاریخ برگزاری قرعه‌کشی، نه تاریخ زنده‌ی امروز
+    dateEl.textContent = new Intl.DateTimeFormat(lang === 'fa' ? 'fa-IR' : 'en-US', {
+      timeZone:'Asia/Tehran', weekday:'short', day:'numeric', month:'short'
+    }).format(regDeadline);
     const diff = regDeadline.getTime() - Date.now();
     if(diff > 0){
       const h = String(Math.floor(diff/3600000)).padStart(2,'0');
       const m = String(Math.floor((diff%3600000)/60000)).padStart(2,'0');
       const s = String(Math.floor((diff%60000)/1000)).padStart(2,'0');
-      text = `${h}:${m}:${s}`;
+      timerEl.textContent = `${h}:${m}:${s}`;
+      timerSide.style.display = '';
     } else {
-      text = lang==='fa' ? '۰۰:۰۰:۰۰' : '00:00:00';
       ended = true;
+      timerSide.style.display = 'none';
     }
+  } else {
+    dateEl.textContent = '—';
+    timerSide.style.display = 'none';
   }
   if(ended !== regEnded){ regEnded = ended; refreshRegistrationAvailability(); }
   banner.classList.toggle('show', ended && !(settings && settings.drawStarted));
-  document.getElementById('timerDisplay').textContent = text;
 }
-setInterval(tickClock, 1000);
-tickClock();
+setInterval(updateCountdown, 1000);
+updateCountdown();
 
 /* ---------------- fingerprint ---------------- */
 function getFingerprint(){
@@ -561,6 +611,32 @@ function getFingerprint(){
 function showStage(id){
   document.querySelectorAll('.stage').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+}
+// تصمیم می‌گیره کدوم صفحه (استیج) نشون داده بشه: ادمین/مالک هیچ‌وقت نباید ثبت‌نام مهمان رو ببینه
+function routeMainStage(){
+  if(settings.drawStarted){
+    if(!window.__drawAnimationStarted){
+      window.__drawAnimationStarted = true;
+      showStage('stageDraw');
+      runDrawAnimation(settings.winners || []);
+    }
+    return;
+  }
+  window.__drawAnimationStarted = false;
+  if(isAdminUser){
+    const capEl = document.getElementById('capInlineAdmin');
+    if(capEl) capEl.textContent = document.getElementById('capInline')?.textContent || '-- / --';
+    const who = document.getElementById('adminIdleWho');
+    if(who){
+      const label = isOwnerUser ? (lang==='fa' ? 'مالک' : 'Owner') : (lang==='fa' ? 'ادمین' : 'Admin');
+      who.textContent = (lang==='fa' ? `وارد شدی به‌عنوان ${label}. از پایین می‌تونی قرعه‌کشی رو شروع کنی.` : `Signed in as ${label}. Use the controls below to start the draw.`);
+    }
+    showStage('stageAdminIdle');
+  } else if(myRegistrantId){
+    showStage('stageDone');
+  } else {
+    showStage('stageIdle');
+  }
 }
 function updateIdleButton(){
   const btn = document.getElementById('openFormBtn');
@@ -607,7 +683,7 @@ let myRegistrantName = localStorage.getItem('mavrix_reg_name') || null;
       myRegistrantId = d.id; myRegistrantName = d.data().name;
       localStorage.setItem('mavrix_reg_id', myRegistrantId);
       localStorage.setItem('mavrix_reg_name', myRegistrantName);
-      if(!settings.drawStarted) showStage('stageDone');
+      routeMainStage();
     }
   }catch(e){ console.error(e); }
 })();
@@ -629,13 +705,7 @@ onSnapshot(doc(db,'settings','main'), (snap)=>{
   }
 
   // stage routing
-  if(settings.drawStarted && !window.__drawAnimationStarted){
-    window.__drawAnimationStarted = true;
-    showStage('stageDraw');
-    runDrawAnimation(settings.winners || []);
-  } else if(!settings.drawStarted){
-    if(myRegistrantId){ showStage('stageDone'); }
-  }
+  routeMainStage();
 
   // chat lock state
   const chatClosed = settings.drawStarted && !isAdminUser;
@@ -758,7 +828,7 @@ document.getElementById('submitRegBtn').addEventListener('click', async ()=>{
 });
 
 function escapeHtml(s){
-  return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  return String(s ?? '').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 }
 
 // آیدی کوتاه نمایشی: یک عدد + یک حرف انگلیسی (مثل R4 یا 3A)، ثابت برای هر ثبت‌نام
@@ -772,21 +842,64 @@ function randomShortId(docId){
 }
 
 /* ---------------- chat ---------------- */
-function renderMsg(v){
-  const cls = v.senderType === 'owner' ? 'owner' : v.senderType === 'admin' ? 'admin' : 'guest';
+function chatDisplayName(v){
   const icon = v.senderType === 'owner' ? '👑 ' : v.senderType === 'admin' ? '🛡️ ' : '';
   const idTag = v.senderType === 'guest' ? `#${randomShortId(v.senderId||'')} ` : '';
-  return `<div class="msg ${cls}"><span class="sender">${icon}${idTag}${escapeHtml(v.senderName||'')}</span>: ${escapeHtml(v.text||'')}</div>`;
+  return `${icon}${idTag}${v.senderName||''}`;
 }
+function renderMsg(v){
+  const cls = v.senderType === 'owner' ? 'owner' : v.senderType === 'admin' ? 'admin' : 'guest';
+  const name = chatDisplayName(v);
+  const quote = v.replyToId ? `<span class="quote"><b>${escapeHtml(v.replyToName||'')}</b>: ${escapeHtml(v.replyToText||'')}</span>` : '';
+  const dName = escapeHtml(name).replace(/"/g,'&quot;');
+  const dText = escapeHtml(v.text||'').replace(/"/g,'&quot;');
+  return `<div class="msg ${cls}" data-id="${v.id}" data-name="${dName}" data-text="${dText}">${quote}<span class="sender">${escapeHtml(name)}</span>: ${escapeHtml(v.text||'')}</div>`;
+}
+
+let replyTarget = null; // {id, name, text}
+function setReplyTarget(id, name, text){
+  if(!id) return;
+  replyTarget = { id, name, text };
+  const shortText = text.length > 60 ? text.slice(0,60) + '…' : text;
+  ['', 'M'].forEach(suf=>{
+    const box = document.getElementById('replyPreview'+suf);
+    if(!box) return;
+    document.getElementById('replyPreviewName'+suf).textContent = name;
+    document.getElementById('replyPreviewText'+suf).textContent = shortText;
+    box.classList.add('show');
+  });
+}
+function clearReplyTarget(){
+  replyTarget = null;
+  ['', 'M'].forEach(suf=>{
+    const box = document.getElementById('replyPreview'+suf);
+    if(box) box.classList.remove('show');
+  });
+}
+document.getElementById('replyPreviewClose').addEventListener('click', clearReplyTarget);
+document.getElementById('replyPreviewCloseM').addEventListener('click', clearReplyTarget);
+
+function attachReplyHandlers(container){
+  container.querySelectorAll('.msg').forEach(el=>{
+    el.addEventListener('click', ()=>{
+      setReplyTarget(el.dataset.id, el.dataset.name, el.dataset.text);
+      const desktopInput = document.getElementById('chatInput');
+      if(desktopInput && desktopInput.offsetParent !== null) desktopInput.focus();
+      else document.getElementById('chatInputM')?.focus();
+    });
+  });
+}
+
 const chatQ = query(collection(db,'chat'), orderBy('createdAt','desc'), limit(80));
 onSnapshot(chatQ, (snap)=>{
   const items = [];
-  snap.forEach(d=>items.push(d.data()));
+  snap.forEach(d=>items.push({ id: d.id, ...d.data() }));
   items.reverse();
   const html = items.map(renderMsg).join('');
   const a = document.getElementById('chatMsgs'), b = document.getElementById('chatMsgsM');
   a.innerHTML = html; a.scrollTop = a.scrollHeight;
   b.innerHTML = html; b.scrollTop = b.scrollHeight;
+  attachReplyHandlers(a); attachReplyHandlers(b);
 });
 
 async function sendChat(inputEl){
@@ -799,8 +912,15 @@ async function sendChat(inputEl){
     return;
   }
   inputEl.value = '';
+  const payload = { text, senderName, senderType, senderId, createdAt: serverTimestamp() };
+  if(replyTarget){
+    payload.replyToId = replyTarget.id;
+    payload.replyToName = replyTarget.name;
+    payload.replyToText = replyTarget.text;
+  }
   try{
-    await addDoc(collection(db,'chat'), { text, senderName, senderType, senderId, createdAt: serverTimestamp() });
+    await addDoc(collection(db,'chat'), payload);
+    clearReplyTarget();
   }catch(e){
     console.error(e);
     alert(lang==='fa' ? 'ارسال پیام ناموفق بود' : 'Failed to send the message');
@@ -820,7 +940,12 @@ async function runDrawAnimation(winners){
   field.innerHTML = '';
   const snap = await getDocs(collection(db,'registrants'));
   const names = [];
-  snap.forEach(d=>{ if(!d.data().blocked) names.push(d.data().name); });
+  const nameMap = {};
+  snap.forEach(d=>{
+    if(d.data().blocked) return;
+    names.push(d.data().name);
+    nameMap[d.id] = d.data().name;
+  });
   const slow = names.length <= 12;
   const positions = [];
   function randPos(){
@@ -849,20 +974,26 @@ async function runDrawAnimation(winners){
     cd.textContent = n;
     const cdInt = setInterval(()=>{
       n--;
-      if(n<=0){ clearInterval(cdInt); cd.remove(); revealWinners(winners); return; }
+      if(n<=0){ clearInterval(cdInt); cd.remove(); revealWinners(winners, nameMap); return; }
       cd.textContent = n;
     }, 900);
   }
 }
-function revealWinners(winners){
+function revealWinners(winners, nameMap){
   document.getElementById('winnerReveal').classList.add('show');
   const el = document.getElementById('winnerNames');
-  if(!winners.length){
+  try{
+    if(!winners || !winners.length){
+      el.innerHTML = `<div class="wname">—</div>`;
+    } else {
+      el.innerHTML = winners.map(w=>{
+        const resolvedName = w.name || (nameMap && nameMap[w.id]) || (lang==='fa' ? 'بدون نام' : 'Unknown');
+        return `<div><div class="wrank">${lang==='fa'?'رتبه':'RANK'} ${w.rank ?? ''}</div><div class="wname">${escapeHtml(resolvedName)}</div></div>`;
+      }).join('');
+    }
+  }catch(e){
+    console.error(e);
     el.innerHTML = `<div class="wname">—</div>`;
-  } else {
-    el.innerHTML = winners.map(w=>
-      `<div><div class="wrank">${lang==='fa'?'رتبه':'RANK'} ${w.rank ?? ''}</div><div class="wname">${escapeHtml(w.name)}</div></div>`
-    ).join('');
   }
   fireConfetti();
   playWinSound();
@@ -956,7 +1087,12 @@ async function handleMagicLink(){
 handleMagicLink();
 
 onAuthStateChanged(auth, async (user)=>{
-  if(!user){ isAdminUser=false; isOwnerUser=false; return; }
+  if(!user){
+    isAdminUser=false; isOwnerUser=false; adminName=null;
+    document.getElementById('adminControls').classList.remove('show');
+    routeMainStage();
+    return;
+  }
   try{
     const snap = await getDoc(doc(db,'admins',user.uid));
     if(snap.exists() && snap.data().status === 'approved'){
@@ -964,6 +1100,7 @@ onAuthStateChanged(auth, async (user)=>{
       isOwnerUser = snap.data().role === 'owner';
       adminName = snap.data().name;
       document.getElementById('adminControls').classList.add('show');
+      routeMainStage();
     }
   }catch(e){ console.error(e); }
 });
