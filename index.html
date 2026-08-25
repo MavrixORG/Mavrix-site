@@ -336,7 +336,7 @@
         <div class="cap num" id="capInline">-- / --</div>
         <h1 data-fa="قرعه‌کشی MAVRIX" data-en="MAVRIX Raffle">قرعه‌کشی MAVRIX</h1>
         <p data-fa="برای شرکت در قرعه‌کشی ثبت‌نام کن" data-en="Register to join the raffle">برای شرکت در قرعه‌کشی ثبت‌نام کن</p>
-        <button class="btn" id="openFormBtn" data-fa="ثبت‌نام" data-en="Register">ثبت‌نام</button>
+        <button class="btn" id="openFormBtn" data-fa="ثبت‌نام" data-en="Register" data-fa-full="ظرفیت پر شده" data-en-full="Capacity full">ثبت‌نام</button>
       </div>
 
       <!-- registration form -->
@@ -472,6 +472,7 @@ const auth = getAuth(app);
 
 /* ---------------- language ---------------- */
 let lang = localStorage.getItem('mavrix_lang') || 'fa';
+let capacityFullFlag = false;
 function applyLang(){
   document.documentElement.lang = lang;
   document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
@@ -486,6 +487,7 @@ function applyLang(){
   });
   const btnLbl = lang === 'fa' ? 'EN' : 'PR';
   document.getElementById('langBtn').textContent = btnLbl;
+  updateIdleButton();
 }
 function toggleLang(){
   lang = lang === 'fa' ? 'en' : 'fa';
@@ -560,7 +562,21 @@ function showStage(id){
   document.querySelectorAll('.stage').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
+function updateIdleButton(){
+  const btn = document.getElementById('openFormBtn');
+  if(!btn) return;
+  if(capacityFullFlag){
+    btn.textContent = lang === 'fa' ? btn.dataset.faFull : btn.dataset.enFull;
+    btn.disabled = true;
+    btn.classList.add('disabled');
+  } else {
+    btn.textContent = lang === 'fa' ? btn.dataset.fa : btn.dataset.en;
+    btn.disabled = false;
+    btn.classList.remove('disabled');
+  }
+}
 document.getElementById('openFormBtn').addEventListener('click', ()=>{
+  if(capacityFullFlag) return;
   newCaptcha();
   showStage('stageForm');
 });
@@ -629,6 +645,8 @@ onSnapshot(doc(db,'settings','main'), (snap)=>{
   // admin controls visibility
   document.getElementById('startDrawBtn').disabled = !!settings.drawStarted;
 
+  capacityFullFlag = Number.isFinite(settings.capacity) && currentRegCount >= settings.capacity;
+  updateIdleButton();
   refreshRegistrationAvailability();
 });
 
@@ -651,6 +669,8 @@ onSnapshot(collection(db,'registrants'), (snap)=>{
   document.getElementById('namesList').innerHTML = rows.slice(0,60).map(r=>
     `<div class="row"><span class="id num">#${randomShortId(r.id)}</span><span>${escapeHtml(r.name)}</span></div>`
   ).join('');
+  capacityFullFlag = cap !== null && currentRegCount >= cap;
+  updateIdleButton();
   refreshRegistrationAvailability();
 });
 
